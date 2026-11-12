@@ -1,5 +1,11 @@
-# Base de datos local y binarios de MariaDB
+# Base de datos local, logs y binarios de contenedores Docker
 docker/mariadb/data/
+docker/**/data/
+docker/**/logs/
+docker/**/webapps/*.war
+*.tar
+*.tar.gz
+*.iso
 
 # Frontend (Node / React)
 pv_front/node_modules/
