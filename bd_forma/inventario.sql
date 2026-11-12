@@ -94,7 +94,10 @@ CREATE TABLE `cliente` (
   `numero_documento` varchar(20) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
   `correo` varchar(100) DEFAULT NULL,
-  `direccion` varchar(255) DEFAULT NULL
+  `direccion` varchar(255) DEFAULT NULL,
+  `tipo_cliente` varchar(50) DEFAULT 'Consumidor Final',
+  `limite_credito` decimal(12,2) DEFAULT 0.00,
+  `estado` enum('ACTIVO','SUSPENDIDO','INACTIVO') NOT NULL DEFAULT 'ACTIVO'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

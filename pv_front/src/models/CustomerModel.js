@@ -7,11 +7,14 @@ export class CustomerModel {
 
   static filterCustomers(customers, query) {
     if (!query) return customers;
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
     return customers.filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.doc.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q)
+      (c.name && c.name.toLowerCase().includes(q)) ||
+      (c.doc && c.doc.toLowerCase().includes(q)) ||
+      (c.email && c.email.toLowerCase().includes(q)) ||
+      (c.phone && c.phone.toLowerCase().includes(q)) ||
+      (c.type && c.type.toLowerCase().includes(q)) ||
+      (c.address && c.address.toLowerCase().includes(q))
     );
   }
 

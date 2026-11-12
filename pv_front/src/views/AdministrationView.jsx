@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ProductModel } from '../models/ProductModel';
-import { INITIAL_CUSTOMERS } from '../data/mockData';
+import { CustomerModel } from '../models/CustomerModel';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import SubmoduleIcon from '../components/common/SubmoduleIcon';
 import ProductEditModal from '../components/product/ProductEditModal';
 import ProductCreateModal from '../components/product/ProductCreateModal';
+import CustomerCreateModal from '../components/customer/CustomerCreateModal';
+import CustomerEditModal from '../components/customer/CustomerEditModal';
 import apiClient from '../services/apiClient';
 
 export default function AdministrationView() {
@@ -41,8 +43,14 @@ export default function AdministrationView() {
   const [toastMessage, setToastMessage] = useState('');
 
   // Estado para Clientes
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
+  const [customers, setCustomers] = useState([]);
+  const [customersLoading, setCustomersLoading] = useState(true);
   const [customerSearch, setCustomerSearch] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerCurrentPage, setCustomerCurrentPage] = useState(1);
+  const [customerItemsPerPage, setCustomerItemsPerPage] = useState(10);
+  const [isCustomerCreateModalOpen, setIsCustomerCreateModalOpen] = useState(false);
+  const [isCustomerEditModalOpen, setIsCustomerEditModalOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState('productos');
 
@@ -51,6 +59,12 @@ export default function AdministrationView() {
     setCurrentPage(1);
     setSelectedProduct(null);
   }, [productSearch]);
+
+  // Reset de página al buscar clientes
+  useEffect(() => {
+    setCustomerCurrentPage(1);
+    setSelectedCustomer(null);
+  }, [customerSearch]);
 
   // Auto-cierre de notificaciones toast
   useEffect(() => {
@@ -77,6 +91,24 @@ export default function AdministrationView() {
       }
     };
     loadProducts();
+  }, []);
+
+  // Carga inicial de clientes desde la base de datos
+  useEffect(() => {
+    const loadCustomers = async () => {
+      try {
+        setCustomersLoading(true);
+        const res = await apiClient.get('/api/customers');
+        if (res.ok) {
+          setCustomers(Array.isArray(res.data) ? res.data : []);
+        }
+      } catch (err) {
+        console.warn('Error cargando clientes:', err);
+      } finally {
+        setCustomersLoading(false);
+      }
+    };
+    loadCustomers();
   }, []);
 
   const filteredProducts = ProductModel.filterProducts(products, productSearch);
@@ -127,10 +159,53 @@ export default function AdministrationView() {
     setCurrentPage(1);
   };
 
-  const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    c.doc.toLowerCase().includes(customerSearch.toLowerCase())
-  );
+  // Lógica de clientes
+  const filteredCustomers = CustomerModel.filterCustomers(customers, customerSearch);
+  const totalCustomerItems = filteredCustomers.length;
+  const totalCustomerPages = Math.max(1, Math.ceil(totalCustomerItems / customerItemsPerPage));
+  const customerStartIndex = (customerCurrentPage - 1) * customerItemsPerPage;
+  const paginatedCustomers = filteredCustomers.slice(customerStartIndex, customerStartIndex + customerItemsPerPage);
+
+  const handleToggleCustomerSuspend = async () => {
+    if (!selectedCustomer) return;
+    const isSuspended = selectedCustomer.status === 'SUSPENDIDO';
+    const newStatus = isSuspended ? 'ACTIVO' : 'SUSPENDIDO';
+
+    const result = await apiClient.patch(`/api/customers/${selectedCustomer.id}/status`, { status: newStatus });
+    if (result.ok) {
+      setCustomers(prev => prev.map(c => c.id === selectedCustomer.id ? { ...c, status: newStatus } : c));
+      setSelectedCustomer(prev => prev ? { ...prev, status: newStatus } : null);
+      showSuccess(result.message || `Cliente "${selectedCustomer.name}" ${isSuspended ? 'reactivado' : 'suspendido'} exitosamente`);
+    } else {
+      showError(result.message, 'Fallo al cambiar estado');
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!selectedCustomer) return;
+    const confirmed = window.confirm(`¿Seguro que desea inactivar o eliminar al cliente "${selectedCustomer.name}"?`);
+    if (!confirmed) return;
+
+    const result = await apiClient.delete(`/api/customers/${selectedCustomer.id}`);
+    if (result.ok) {
+      setCustomers(prev => prev.filter(c => c.id !== selectedCustomer.id));
+      setSelectedCustomer(null);
+      showSuccess(result.message || `Cliente "${selectedCustomer.name}" eliminado del catálogo`);
+    } else {
+      showError(result.message, 'Fallo al eliminar cliente');
+    }
+  };
+
+  const handleSaveEditedCustomer = (updated) => {
+    setCustomers(prev => prev.map(c => c.id === updated.id ? updated : c));
+    setSelectedCustomer(updated);
+  };
+
+  const handleCustomerCreated = (newCustomer) => {
+    setCustomers(prev => [newCustomer, ...prev]);
+    setSelectedCustomer(newCustomer);
+    setCustomerCurrentPage(1);
+  };
 
   return (
     <div style={{
@@ -632,64 +707,373 @@ export default function AdministrationView() {
         {/* 2. SUBMÓDULO: CLIENTES */}
         {activeTab === 'clientes' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            {/* ENCABEZADO Y BOTONES DE ACCIÓN */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-main)', margin: 0, fontSize: '1.4rem' }}>
+                <h2 style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--google-blue)', margin: 0, fontSize: '1.4rem' }}>
                   👥 Directorio de Clientes y Cuentas
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: '4px 0 0 0' }}>
                   Base de datos de contribuyentes, consumidores finales y clientes a crédito.
                 </p>
               </div>
-              <button className="btn-quick-add" onClick={() => alert('Modal para registrar cliente')}>
-                ＋ Nuevo Cliente
-              </button>
+
+              {/* BOTONERA DE ACCIONES UNIFORME */}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button 
+                  className="btn-quick-add" 
+                  onClick={() => setIsCustomerCreateModalOpen(true)}
+                  title="Registrar un nuevo cliente en el directorio"
+                >
+                  ＋ Nuevo Cliente
+                </button>
+
+                {/* BOTÓN MODIFICAR */}
+                <button
+                  onClick={() => setIsCustomerEditModalOpen(true)}
+                  disabled={!selectedCustomer}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '0.84rem',
+                    fontWeight: 700,
+                    border: '1px solid ' + (selectedCustomer ? 'var(--google-blue)' : 'var(--panel-border)'),
+                    background: selectedCustomer ? '#e8f0fe' : '#f1f3f4',
+                    color: selectedCustomer ? 'var(--google-blue)' : '#9aa0a6',
+                    cursor: selectedCustomer ? 'pointer' : 'not-allowed',
+                    transition: 'var(--transition)'
+                  }}
+                  title={selectedCustomer ? `Modificar ${selectedCustomer.name}` : 'Seleccione un cliente para modificar'}
+                >
+                  <span>✏️</span> Modificar
+                </button>
+
+                {/* BOTÓN SUSPENDER / REACTIVAR */}
+                <button
+                  onClick={handleToggleCustomerSuspend}
+                  disabled={!selectedCustomer}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '0.84rem',
+                    fontWeight: 700,
+                    border: '1px solid ' + (selectedCustomer ? '#f9ab00' : 'var(--panel-border)'),
+                    background: selectedCustomer ? '#fef7e0' : '#f1f3f4',
+                    color: selectedCustomer ? '#b06000' : '#9aa0a6',
+                    cursor: selectedCustomer ? 'pointer' : 'not-allowed',
+                    transition: 'var(--transition)'
+                  }}
+                  title={selectedCustomer ? (selectedCustomer.status === 'SUSPENDIDO' ? 'Reactivar cliente' : 'Suspender cliente') : 'Seleccione un cliente para suspender o reactivar'}
+                >
+                  <span>{selectedCustomer?.status === 'SUSPENDIDO' ? '▶️' : '⏸️'}</span> 
+                  {selectedCustomer?.status === 'SUSPENDIDO' ? 'Reactivar' : 'Suspender'}
+                </button>
+
+                {/* BOTÓN ELIMINAR */}
+                <button
+                  onClick={handleDeleteCustomer}
+                  disabled={!selectedCustomer}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '0.84rem',
+                    fontWeight: 700,
+                    border: '1px solid ' + (selectedCustomer ? '#ea4335' : 'var(--panel-border)'),
+                    background: selectedCustomer ? '#fce8e6' : '#f1f3f4',
+                    color: selectedCustomer ? '#c5221f' : '#9aa0a6',
+                    cursor: selectedCustomer ? 'pointer' : 'not-allowed',
+                    transition: 'var(--transition)'
+                  }}
+                  title={selectedCustomer ? `Eliminar ${selectedCustomer.name}` : 'Seleccione un cliente para eliminar'}
+                >
+                  <span>🗑️</span> Eliminar
+                </button>
+              </div>
             </div>
 
+            {/* BARRA INFORMATIVA DE SELECCIÓN */}
+            {selectedCustomer && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#e8f0fe',
+                border: '1px solid #c2e7ff',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                marginBottom: '14px',
+                fontSize: '0.85rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 800, color: 'var(--google-blue)' }}>Seleccionado:</span>
+                  <span className="code-col" style={{ fontWeight: 700 }}>{selectedCustomer.doc}</span>
+                  <strong style={{ color: 'var(--text-main)' }}>{selectedCustomer.name}</strong>
+                  <span style={{ color: 'var(--text-muted)' }}>|</span>
+                  <span>Tel: <strong>{selectedCustomer.phone || 'N/A'}</strong></span>
+                  <span style={{ color: 'var(--text-muted)' }}>|</span>
+                  <span>Crédito: <strong style={{ color: 'var(--google-blue)' }}>${Number(selectedCustomer.creditLimit || 0).toFixed(2)}</strong></span>
+                  <span style={{ 
+                    padding: '2px 8px', 
+                    borderRadius: '6px', 
+                    fontSize: '0.72rem', 
+                    fontWeight: 800,
+                    background: selectedCustomer.status === 'SUSPENDIDO' ? '#fef7e0' : '#e6f4ea',
+                    color: selectedCustomer.status === 'SUSPENDIDO' ? '#b06000' : '#137333'
+                  }}>
+                    {selectedCustomer.status || 'ACTIVO'}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setSelectedCustomer(null)} 
+                  style={{ background: 'none', border: 'none', color: 'var(--google-blue)', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' }}
+                >
+                  ✕ Deseleccionar
+                </button>
+              </div>
+            )}
+
             {/* BUSCADOR */}
-            <div className="search-bar-container" style={{ marginBottom: '18px' }}>
+            <div className="search-bar-container" style={{ marginBottom: '16px' }}>
               <div className="search-input-wrapper">
                 <span>🔍</span>
                 <input 
                   type="text" 
                   className="search-input" 
-                  placeholder="Buscar por nombre, RIF o Cédula de Identidad..." 
+                  placeholder="Buscar por nombre, RIF, cédula, teléfono o correo..." 
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                 />
               </div>
             </div>
 
-            <table className="pos-table" style={{ width: '100%' }}>
-              <thead>
-                <tr>
-                  <th style={{ width: '130px' }}>Documento</th>
-                  <th>Razón Social / Nombre</th>
-                  <th>Teléfono</th>
-                  <th>Tipo Cliente</th>
-                  <th>Dirección</th>
-                  <th style={{ width: '90px', textAlign: 'center' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCustomers.map(c => (
-                  <tr key={c.id}>
-                    <td className="code-col">{c.doc}</td>
-                    <td><strong>{c.name}</strong></td>
-                    <td>{c.phone}</td>
-                    <td>
-                      <span style={{ background: '#e8f0fe', color: 'var(--google-blue)', padding: '2px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>
-                        {c.type}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{c.address}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button style={{ background: 'none', border: 'none', cursor: 'pointer' }} title="Editar">✏️</button>
-                    </td>
+            {/* TABLA GRID DE CLIENTES */}
+            <div style={{ maxHeight: '480px', overflowY: 'auto', border: '1px solid var(--panel-border)', borderRadius: '14px' }}>
+              <table className="pos-table" style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th style={{ width: '40px', textAlign: 'center' }}>Sel</th>
+                    <th style={{ width: '130px' }}>RIF / Cédula</th>
+                    <th>Nombre / Razón Social</th>
+                    <th style={{ width: '120px' }}>Teléfono</th>
+                    <th>Correo Electrónico</th>
+                    <th style={{ width: '160px' }}>Tipo Cliente</th>
+                    <th style={{ width: '120px', textAlign: 'right' }}>Límite Crédito ($)</th>
+                    <th style={{ width: '100px', textAlign: 'center' }}>Estado</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {customersLoading && (
+                    <tr>
+                      <td colSpan="8" style={{ textAlign: 'center', padding: '28px' }}>
+                        Cargando directorio de clientes desde la base de datos...
+                      </td>
+                    </tr>
+                  )}
+                  {!customersLoading && filteredCustomers.length === 0 && (
+                    <tr>
+                      <td colSpan="8" style={{ textAlign: 'center', padding: '28px', color: 'var(--text-muted)' }}>
+                        No se encontraron clientes coincidentes con el criterio de búsqueda.
+                      </td>
+                    </tr>
+                  )}
+                  {!customersLoading && paginatedCustomers.map(c => {
+                    const isSelected = selectedCustomer?.id === c.id;
+                    const isSuspended = c.status === 'SUSPENDIDO';
+
+                    return (
+                      <tr 
+                        key={c.id}
+                        onClick={() => setSelectedCustomer(isSelected ? null : c)}
+                        style={{
+                          cursor: 'pointer',
+                          backgroundColor: isSelected ? '#e8f0fe' : (isSuspended ? '#fffdf5' : '#ffffff'),
+                          boxShadow: isSelected ? 'inset 3px 0 0 var(--google-blue)' : undefined,
+                          transition: 'background-color 0.15s ease'
+                        }}
+                        title="Haz clic para seleccionar este cliente"
+                      >
+                        <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                          <input 
+                            type="radio" 
+                            name="adminCustomersRadio"
+                            checked={isSelected}
+                            onChange={() => setSelectedCustomer(isSelected ? null : c)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </td>
+                        <td className="code-col" style={{ fontWeight: 600 }}>{c.doc}</td>
+                        <td>
+                          <span style={{ fontWeight: isSelected ? 700 : 500, color: isSuspended ? 'var(--text-muted)' : 'var(--text-main)' }}>
+                            {c.name}
+                          </span>
+                          {c.address && (
+                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '300px' }}>
+                              📍 {c.address}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ fontSize: '0.84rem' }}>{c.phone || '—'}</td>
+                        <td style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>{c.email || '—'}</td>
+                        <td>
+                          <span style={{
+                            background: '#f1f3f4',
+                            color: '#5f6368',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.74rem',
+                            fontWeight: 600
+                          }}>
+                            {c.type || 'Consumidor Final'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right', fontWeight: 800, fontFamily: 'Orbitron, monospace', color: 'var(--google-blue)' }}>
+                          ${Number(c.creditLimit || 0).toFixed(2)}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            background: isSuspended ? '#fef7e0' : (c.status === 'INACTIVO' ? '#fce8e6' : '#e6f4ea'),
+                            color: isSuspended ? '#b06000' : (c.status === 'INACTIVO' ? '#c5221f' : '#137333')
+                          }}>
+                            {c.status || 'ACTIVO'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* BARRA DE PAGINACIÓN */}
+            {!customersLoading && totalCustomerItems > 0 && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 4px 4px 4px',
+                marginTop: '10px',
+                flexWrap: 'wrap',
+                gap: '12px',
+                borderTop: '1px solid var(--panel-border)'
+              }}>
+                <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+                  Mostrando <strong style={{ color: 'var(--text-main)' }}>{totalCustomerItems > 0 ? customerStartIndex + 1 : 0}</strong> a{' '}
+                  <strong style={{ color: 'var(--text-main)' }}>{Math.min(customerStartIndex + customerItemsPerPage, totalCustomerItems)}</strong> de{' '}
+                  <strong style={{ color: 'var(--google-blue)' }}>{totalCustomerItems}</strong> clientes
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                    <span>Filas por página:</span>
+                    <select
+                      value={customerItemsPerPage}
+                      onChange={(e) => {
+                        setCustomerItemsPerPage(Number(e.target.value));
+                        setCustomerCurrentPage(1);
+                      }}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--panel-border)',
+                        background: '#ffffff',
+                        fontSize: '0.82rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                      onClick={() => setCustomerCurrentPage(1)}
+                      disabled={customerCurrentPage === 1}
+                      style={{
+                        padding: '5px 9px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--panel-border)',
+                        background: '#ffffff',
+                        cursor: customerCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                        opacity: customerCurrentPage === 1 ? 0.4 : 1,
+                        fontSize: '0.8rem'
+                      }}
+                      title="Primera página"
+                    >
+                      «
+                    </button>
+                    <button
+                      onClick={() => setCustomerCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={customerCurrentPage === 1}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--panel-border)',
+                        background: '#ffffff',
+                        cursor: customerCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                        opacity: customerCurrentPage === 1 ? 0.4 : 1,
+                        fontSize: '0.8rem'
+                      }}
+                      title="Página anterior"
+                    >
+                      ‹ Anterior
+                    </button>
+
+                    <span style={{ fontSize: '0.84rem', fontWeight: 700, padding: '0 8px', color: 'var(--google-blue)' }}>
+                      Página {customerCurrentPage} de {totalCustomerPages}
+                    </span>
+
+                    <button
+                      onClick={() => setCustomerCurrentPage(p => Math.min(totalCustomerPages, p + 1))}
+                      disabled={customerCurrentPage === totalCustomerPages}
+                      style={{
+                        padding: '5px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--panel-border)',
+                        background: '#ffffff',
+                        cursor: customerCurrentPage === totalCustomerPages ? 'not-allowed' : 'pointer',
+                        opacity: customerCurrentPage === totalCustomerPages ? 0.4 : 1,
+                        fontSize: '0.8rem'
+                      }}
+                      title="Página siguiente"
+                    >
+                      Siguiente ›
+                    </button>
+                    <button
+                      onClick={() => setCustomerCurrentPage(totalCustomerPages)}
+                      disabled={customerCurrentPage === totalCustomerPages}
+                      style={{
+                        padding: '5px 9px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--panel-border)',
+                        background: '#ffffff',
+                        cursor: customerCurrentPage === totalCustomerPages ? 'not-allowed' : 'pointer',
+                        opacity: customerCurrentPage === totalCustomerPages ? 0.4 : 1,
+                        fontSize: '0.8rem'
+                      }}
+                      title="Última página"
+                    >
+                      »
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -821,6 +1205,21 @@ export default function AdministrationView() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onProductCreated={handleProductCreated}
+      />
+
+      {/* MODAL DE CREACIÓN DE CLIENTE */}
+      <CustomerCreateModal
+        isOpen={isCustomerCreateModalOpen}
+        onClose={() => setIsCustomerCreateModalOpen(false)}
+        onCustomerCreated={handleCustomerCreated}
+      />
+
+      {/* MODAL DE MODIFICACIÓN DE CLIENTE */}
+      <CustomerEditModal
+        isOpen={isCustomerEditModalOpen}
+        onClose={() => setIsCustomerEditModalOpen(false)}
+        customer={selectedCustomer}
+        onSave={handleSaveEditedCustomer}
       />
     </div>
   );
