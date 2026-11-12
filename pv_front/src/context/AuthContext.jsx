@@ -22,14 +22,7 @@ export function AuthProvider({ children }) {
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { /* ignore */ }
     }
-    // Por defecto inicia como Super Administrador
-    return {
-      id: 1,
-      nombre: 'Super',
-      apellido: 'Administrador',
-      email: 'superadmin@sistema.com',
-      rol: 'SUPERADMIN'
-    };
+    return null; // Inicia en null para exigir login si no hay sesión activa
   });
 
   // Lista dinámica de módulos autorizados provenientes de la tabla modulo / r_modulo_rol
@@ -38,7 +31,7 @@ export function AuthProvider({ children }) {
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { /* ignore */ }
     }
-    return DEFAULT_SUPERADMIN_MODULES;
+    return [];
   });
 
   const [permissions, setPermissions] = useState(() => {
