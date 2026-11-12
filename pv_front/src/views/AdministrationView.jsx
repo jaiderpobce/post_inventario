@@ -8,6 +8,8 @@ import ProductEditModal from '../components/product/ProductEditModal';
 import ProductCreateModal from '../components/product/ProductCreateModal';
 import CustomerCreateModal from '../components/customer/CustomerCreateModal';
 import CustomerEditModal from '../components/customer/CustomerEditModal';
+import PurchasesView from './PurchasesView';
+import InventoryView from './InventoryView';
 import apiClient from '../services/apiClient';
 
 export default function AdministrationView() {
@@ -1079,87 +1081,12 @@ export default function AdministrationView() {
 
         {/* 3. SUBMÓDULO: COMPRAS Y PROVEEDORES */}
         {activeTab === 'compras' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div>
-                <h2 style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-main)', margin: 0, fontSize: '1.4rem' }}>
-                  🛒 Gestión de Compras y Facturas de Proveedores
-                </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: '4px 0 0 0' }}>
-                  Registro de facturas recibidas para alimentar automáticamente las existencias de stock.
-                </p>
-              </div>
-              <button className="btn-quick-add" onClick={() => alert('Formulario de nueva compra')}>
-                ＋ Registrar Factura de Compra
-              </button>
-            </div>
-
-            {/* TARJETAS RESUMEN DE COMPRAS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-              <div style={{ border: '1px solid var(--panel-border)', borderRadius: '16px', padding: '18px', background: '#f8f9fa' }}>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Proveedores Registrados</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--google-blue)' }}>32</div>
-              </div>
-              <div style={{ border: '1px solid var(--panel-border)', borderRadius: '16px', padding: '18px', background: '#f8f9fa' }}>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Compras del Mes</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--google-green)' }}>14 Facturas</div>
-              </div>
-              <div style={{ border: '1px solid var(--panel-border)', borderRadius: '16px', padding: '18px', background: '#f8f9fa' }}>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Total Invertido (USD)</div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#202124', fontFamily: 'Orbitron, monospace' }}>$4,892.40</div>
-              </div>
-            </div>
-
-            <h4 style={{ color: 'var(--text-main)', marginBottom: '10px' }}>Proveedores Principales del Catálogo:</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-              <div style={{ padding: '12px', border: '1px solid var(--panel-border)', borderRadius: '10px', fontSize: '0.85rem' }}>
-                🏢 <strong>Alimentos Polar C.A.</strong> (Harinas, Pastas, Aceites)
-              </div>
-              <div style={{ padding: '12px', border: '1px solid var(--panel-border)', borderRadius: '10px', fontSize: '0.85rem' }}>
-                🏢 <strong>Plumrose Latinoamericana</strong> (Embutidos y Charcutería)
-              </div>
-              <div style={{ padding: '12px', border: '1px solid var(--panel-border)', borderRadius: '10px', fontSize: '0.85rem' }}>
-                🏢 <strong>Colgate-Palmolive</strong> (Cuidado Personal)
-              </div>
-              <div style={{ padding: '12px', border: '1px solid var(--panel-border)', borderRadius: '10px', fontSize: '0.85rem' }}>
-                🏢 <strong>Nestlé Venezuela</strong> (Lácteos y Golosinas)
-              </div>
-            </div>
-          </div>
+          <PurchasesView embedded={true} />
         )}
 
         {/* 4. SUBMÓDULO: INVENTARIO Y ALMACENES */}
         {activeTab === 'inventario' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div>
-                <h2 style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-main)', margin: 0, fontSize: '1.4rem' }}>
-                  🏢 Control de Inventarios y Almacenes
-                </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: '4px 0 0 0' }}>
-                  Existencias distribuidas por almacén físico, alertas de stock mínimo y ajustes.
-                </p>
-              </div>
-              <button className="btn-quick-add" onClick={() => alert('Ajuste de inventario')}>
-                ＋ Ajuste de Entrada / Salida
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-              <div style={{ border: '1px solid var(--panel-border)', borderRadius: '14px', padding: '18px', background: '#f8f9fa' }}>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Almacén Activo</div>
-                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--google-blue)' }}>Almacén Principal</div>
-              </div>
-              <div style={{ border: '1px solid var(--panel-border)', borderRadius: '14px', padding: '18px', background: '#f8f9fa' }}>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Artículos con Existencia</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--google-green)' }}>50 ítems</div>
-              </div>
-              <div style={{ border: '1px solid var(--panel-border)', borderRadius: '14px', padding: '18px', background: '#f8f9fa' }}>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Alertas Stock Mínimo</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#d93025' }}>0 alertas</div>
-              </div>
-            </div>
-          </div>
+          <InventoryView embedded={true} />
         )}
 
         {/* 5. SUBMÓDULO: CATEGORÍAS Y MEDIDAS */}

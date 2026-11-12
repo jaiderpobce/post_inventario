@@ -111,7 +111,10 @@ CREATE TABLE `compra` (
   `id_proveedor` int(11) NOT NULL,
   `fecha_compra` datetime DEFAULT current_timestamp(),
   `total` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `n_factura` varchar(50) DEFAULT NULL
+  `n_factura` varchar(50) DEFAULT NULL,
+  `estado` enum('COMPLETADA','PENDIENTE','ANULADA') NOT NULL DEFAULT 'COMPLETADA',
+  `observaciones` text DEFAULT NULL,
+  `id_almacen` int(11) DEFAULT 3
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -302,7 +305,8 @@ CREATE TABLE `proveedor` (
   `numero_documento` varchar(20) DEFAULT NULL,
   `telefono` varchar(20) DEFAULT NULL,
   `correo` varchar(100) DEFAULT NULL,
-  `direccion` varchar(255) DEFAULT NULL
+  `direccion` varchar(255) DEFAULT NULL,
+  `estado` enum('ACTIVO','SUSPENDIDO','INACTIVO') NOT NULL DEFAULT 'ACTIVO'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
