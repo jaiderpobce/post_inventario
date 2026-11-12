@@ -1,0 +1,90 @@
+services:
+  # 1. BASE DE DATOS MARIADB CON PERSISTENCIA DE DATOS
+  db-mariadb:
+    image: mariadb:10.11
+    container_name: pos_mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: inventario
+      MYSQL_USER: pos_user
+      MYSQL_PASSWORD: pos_password
+    ports:
+      - "3316:3306"
+    volumes:
+      - ./docker/mariadb/data:/var/lib/mysql
+      # Scripts de inicialización automática para entornos limpios (orden alfabético)
+      - ./bd_forma/inventario.sql:/docker-entrypoint-initdb.d/01-inventario.sql:ro
+      - ./bd_forma/rbac.sql:/docker-entrypoint-initdb.d/02-pos_rbac.sql:ro
+    networks:
+      - pos_network
+
+  # 2. PHPMYADMIN PARA GESTIÓN DE BASES DE DATOS (inventario y pos_rbac)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: pos_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db-mariadb
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8085:80"
+    depends_on:
+      - db-mariadb
+    networks:
+      - pos_network
+
+  # 3. BACKEND SPRINGBOOT (CONEXIÓN A INVENTARIO Y POS_RBAC)
+  backend-springboot:
+    build:
+      context: ./pv_back
+      dockerfile: ../docker/springboot/Dockerfile
+    container_name: pos_springboot_backend
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      # Conexión Base de Datos Negocio (Inventario)
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db-mariadb:3306/inventario?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: pos_user
+      SPRING_DATASOURCE_PASSWORD: pos_password
+      # Conexión Base de Datos Seguridad (RBAC)
+      RBAC_DATASOURCE_URL: jdbc:mariadb://db-mariadb:3306/pos_rbac?useSSL=false&allowPublicKeyRetrieval=true
+      RBAC_DATASOURCE_USERNAME: pos_user
+      RBAC_DATASOURCE_PASSWORD: pos_password
+    depends_on:
+      - db-mariadb
+    networks:
+      - pos_network
+
+  # 4. APACHE TOMCAT PARA REPORTES DE IMPRESIÓN (JASPERREPORTS / PDF)
+  reports-tomcat:
+    build:
+      context: ./docker/tomcat
+      dockerfile: Dockerfile
+    container_name: pos_tomcat_reports
+    restart: always
+    ports:
+      - "8888:8080"
+    volumes:
+      - ./docker/tomcat/webapps:/usr/local/tomcat/webapps
+      - ./docker/tomcat/reports:/usr/local/tomcat/reports
+    networks:
+      - pos_network
+
+  # 5. FRONTEND REACT (PV_FRONT COMPILADO EN NGINX)
+  frontend-react:
+    build:
+      context: ./pv_front
+      dockerfile: ../docker/react/Dockerfile
+    container_name: pos_react_frontend
+    restart: always
+    ports:
+      - "3005:80"
+    networks:
+      - pos_network
+
+networks:
+  pos_network:
+    driver: bridge

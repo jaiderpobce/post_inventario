@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Inventario — Mockup</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg-2: #101a2b;
+      --panel: rgba(17, 26, 42, 0.9);
+      --panel-2: #18273a;
+      --panel-3: #122033;
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #ebf2ff;
+      --muted: #8fa7c5;
+      --blue: #2f8cff;
+      --blue-2: #63b3ff;
+      --orange: #ff8a3d;
+      --orange-2: #ffb067;
+      --green: #25c38b;
+      --red: #ff6b6b;
+      --shadow: 0 22px 50px rgba(0, 0, 0, 0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(47, 140, 255, 0.17), transparent 18rem),
+        radial-gradient(circle at 85% 25%, rgba(255, 138, 61, 0.11), transparent 20rem),
+        var(--bg);
+    }
+
+    .app {
+      max-width: 1520px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 26px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px 24px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(17, 26, 42, 0.72);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--orange), var(--blue));
+      font-weight: 800; color: white;
+      box-shadow: 0 10px 22px rgba(47, 140, 255, 0.35);
+    }
+
+    .brand h1 { margin: 0; font-size: 1rem; letter-spacing: .08em; text-transform: uppercase; }
+    .brand small { color: var(--muted); }
+
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .pill, .icon-btn, .search, .action, .cash-btn, .nav-btn, .product {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+    }
+
+    .pill { padding: 10px 14px; color: var(--muted); font-size: .85rem; }
+    .icon-btn {
+      width: 42px; height: 42px; display: grid; place-items: center;
+      color: var(--text); font-size: 1.1rem;
+    }
+    .icon-btn.primary { background: linear-gradient(135deg, var(--blue), var(--blue-2)); border: none; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(360px, .95fr);
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .main-panel, .sidebar { border: 1px solid var(--line); border-radius: 24px; background: var(--panel); box-shadow: var(--shadow); }
+    .main-panel { padding: 22px; }
+
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .search {
+      flex: 1; display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; min-width: 220px;
+    }
+    .search input {
+      width: 100%; border: 0; outline: 0; background: transparent; color: var(--text);
+      font: inherit;
+    }
+    .search input::placeholder { color: var(--muted); }
+
+    .toolbar-status { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 16px var(--green); }
+
+    .categories { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+    .categories::-webkit-scrollbar { height: 6px; }
+    .categories button { cursor: pointer; }
+    .nav-btn { padding: 12px 18px; color: var(--text); font-weight: 700; }
+    .nav-btn.active { background: linear-gradient(135deg, rgba(47,140,255,.18), rgba(255,138,61,.14)); border-color: rgba(99,179,255,.35); color: var(--blue-2); }
+
+    .catalog {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px; margin-top: 20px;
+    }
+
+    .product {
+      padding: 14px; position: relative; overflow: hidden; cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .product:hover { transform: translateY(-2px); border-color: rgba(99,179,255,.4); }
+    .product-image {
+      height: 116px; border-radius: 12px; position: relative; overflow: hidden;
+      background: linear-gradient(135deg, rgba(47,140,255,.8), rgba(255,138,61,.7));
+    }
+    .product-image::before, .product-image::after {
+      content: ""; position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,.15);
+    }
+    .product-image::before { width: 120px; height: 120px; right: -18px; top: -32px; }
+    .product-image::after { width: 120px; height: 120px; left: -18px; bottom: -38px; }
+    .product.badge::before {
+      content: attr(data-label); position: absolute; top: 10px; left: 10px; z-index: 1;
+      padding: 6px 8px; border-radius: 8px; background: rgba(255,138,61,.92); color: white;
+      font-size: .7rem; font-weight: 800; letter-spacing: .04em;
+    }
+    .product-code { color: var(--muted); font-size: .73rem; margin-top: 12px; }
+    .product-name { margin: 5px 0; font-size: 1rem; font-weight: 700; }
+    .product-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .stock { color: var(--green); font-size: .75rem; }
+    .price { font-weight: 800; font-size: 1.08rem; }
+
+    .sidebar { padding: 18px; }
+    .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .ticket-header h2 { margin: 0; font-size: 1.1rem; }
+    .ticket-badge { padding: 7px 10px; border-radius: 10px; color: var(--orange-2); background: rgba(255,138,61,.12); font-size: .75rem; font-weight: 800; }
+
+    .ticket-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+    .item {
+      display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px;
+      padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-3);
+    }
+    .item-thumb {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(47,140,255,.8), rgba(255,138,61,.8));
+    }
+    .item h3 { margin: 0; font-size: .94rem; }
+    .item p { margin: 3px 0 0; color: var(--muted); font-size: .76rem; }
+    .item-price { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+    .qty-control { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .qty-btn { width: 22px; height: 22px; border-radius: 7px; border: 0; background: rgba(255,255,255,.08); color: var(--text); }
+    .qty { font-size: .78rem; color: var(--muted); }
+    .price-val { font-weight: 800; }
+
+    .totals { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .row { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0; color: var(--muted); }
+    .row strong { color: var(--text); }
+    .row.total { color: var(--text); font-size: 1.15rem; font-weight: 900; }
+
+    .payment-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
+    .cash-btn { padding: 14px 10px; color: var(--text); font-weight: 800; }
+    .cash-btn.active { background: linear-gradient(135deg, rgba(37,195,139,.18), rgba(47,140,255,.1)); border-color: rgba(37,195,139,.36); color: var(--green); }
+
+    .checkout { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .action {
+      border: none; padding: 16px; font: inherit; font-weight: 800; cursor: pointer;
+    }
+    .action.secondary { background: rgba(255,255,255,.05); color: var(--text); }
+    .action.primary { background: linear-gradient(135deg, var(--orange), #ff6d2d); color: white; box-shadow: 0 12px 24px rgba(255,138,61,.24); }
+
+    .bottom-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 10px; padding: 14px 20px; margin-top: 20px; border-radius: 16px;
+      border: 1px solid var(--line); background: rgba(17,26,42,.72);
+    }
+    .summary { display: flex; gap: 10px; color: var(--muted); }
+    .summary strong { color: var(--text); }
+    .quick-actions { display: flex; gap: 10px; }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .catalog { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .app { padding: 16px; }
+      .topbar, .toolbar, .bottom-bar { flex-wrap: wrap; }
+      .topbar-actions { width: 100%; justify-content: flex-end; }
+      .catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .checkout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <h1>StoreFlow POS</h1>
+          <small>Inventario · Cobranzas · Ventas</small>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="pill">Caja #03</div>
+        <div class="pill">Vendedor: Juan</div>
+        <button class="icon-btn" aria-label="Notificaciones">🔔</button>
+        <button class="icon-btn primary" aria-label="Nueva venta">＋</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="main-panel">
+        <div class="toolbar">
+          <label class="search" aria-label="Buscar producto">
+            <span>⌕</span>
+            <input value="Buscar producto, código o categoría" aria-label="Buscar producto" />
+          </label>
+          <div class="toolbar-status">
+            <span class="status-dot"></span>
+            <span>Servidor conectado</span>
+          </div>
+        </div>
+
+        <nav class="categories" aria-label="Categorías de productos">
+          <button class="nav-btn active">Todos</button>
+          <button class="nav-btn">Bebidas</button>
+          <button class="nav-btn">Lácteos</button>
+          <button class="nav-btn">Snacks</button>
+          <button class="nav-btn">Aseo</button>
+          <button class="nav-btn">Hogar</button>
+          <button class="nav-btn">Electrónica</button>
+          <button class="nav-btn">Ropa</button>
+        </nav>
+
+        <div class="catalog" aria-label="Productos">
+          <article class="product badge" data-label="Popular">
+            <div class="product-image" aria-hidden="true"></div>
+            <div class="product-code">001234</div>
+            <h3 class="product-name">Coca Cola 600ml</h3>
+            <div class="product-meta"><span class="stock">12 disponibles</span><span class="price">$18.00</span></div>
+          </article>
+
+          <article class="product">
+            <div class="product-image" aria-hidden="true" style="background:linear-gradient(135deg, rgba(37,195,139,.8), rgba(47,140,255,.7));"></div>
+            <div class="product-code">001241</div>
+            <h3 class="product-name">Yogur Natural</h3>
+            <div class="product-meta"><span class="stock">28 disponibles</span><span class="price">$14.50</span></div>
+          </article>
+
+          <article class="product badge" data-label="Oferta">
+            <div class="product-image" aria-hidden="true" style="background:linear-gradient(135deg, rgba(255,138,61,.8), rgba(255,176,103,.7));"></div>
+            <div class="product-code">001308</div>
+            <h3 class="product-name">Chips Ranch</h3>
+            <div class="product-meta"><span class="stock">17 disponibles</span><span class="price">$22.00</span></div>
+          </article>
+
+          <article class="product">
+            <div class="product-image" aria-hidden="true" style="background:linear-gradient(135deg, rgba(47,140,255,.8), rgba(99,179,255,.7));"></div>
+            <div class="product-code">001410</div>
+            <h3 class="product-name">Jabón Líquido</h3>
+            <div class="product-meta"><span class="stock">9 disponibles</span><span class="price">$39.90</span></div>
+          </article>
+
+          <article class="product">
+            <div class="product-image" aria-hidden="true" style="background:linear-gradient(135deg, rgba(80,188,255,.8), rgba(255,138,61,.7));"></div>
+            <div class="product-code">001519</div>
+            <h3 class="product-name">Pañuelos</h3>
+            <div class="product-meta"><span class="stock">34 disponibles</span><span class="price">$12.00</span></div>
+          </article>
+
+          <article class="product badge" data-label="Nuevo">
+            <div class="product-image" aria-hidden="true" style="background:linear-gradient(135deg, rgba(255,138,61,.8), rgba(255,94,94,.7));"></div>
+            <div class="product-code">001670</div>
+            <h3 class="product-name">Galletas Integrales</h3>
+            <div class="product-meta"><span class="stock">21 disponibles</span><span class="price">$26.50</span></div>
+          </article>
+
+          <article class="product">
+            <div class="product-image" aria-hidden="true" style="background:linear-gradient(135deg, rgba(157,102,255,.8), rgba(47,140,255,.7));"></div>
+            <div class="product-code">001875</div>
+            <h3 class="product-name">Pasta Dental</h3>
+            <div class="product-meta"><span class="stock">15 disponibles</span><span class="price">$31.00</span></div>
+          </article>
+
+          <article class="product">
+            <div class="product-image" aria-hidden="true" style="background:linear-gradient(135deg, rgba(37,195,139,.8), rgba(255,138,61,.7));"></div>
+            <div class="product-code">001992</div>
+            <h3 class="product-name">Agua Mineral</h3>
+            <div class="product-meta"><span class="stock">42 disponibles</span><span class="price">$10.00</span></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="sidebar" aria-label="Resumen de venta">
+        <div class="ticket-header">
+          <h2>Venta actual</h2>
+          <span class="ticket-badge">Ticket #2487</span>
+        </div>
+
+        <ul class="ticket-items">
+          <li class="item">
+            <div class="item-thumb" aria-hidden="true"></div>
+            <div>
+              <h3>Coca Cola 600ml</h3>
+              <p>Precio unitario: $18.00</p>
+              <div class="qty-control">
+                <button class="qty-btn" aria-label="Disminuir cantidad">−</button>
+                <span class="qty">2 unidades</span>
+                <button class="qty-btn" aria-label="Aumentar cantidad">＋</button>
+              </div>
+            </div>
+            <div class="item-price"><span class="price-val">$36.00</span></div>
+          </li>
+
+          <li class="item">
+            <div class="item-thumb" aria-hidden="true" style="background:linear-gradient(135deg, rgba(37,195,139,.8), rgba(47,140,255,.7));"></div>
+            <div>
+              <h3>Yogur Natural</h3>
+              <p>Precio unitario: $14.50</p>
+              <div class="qty-control">
+                <button class="qty-btn" aria-label="Disminuir cantidad">−</button>
+                <span class="qty">1 unidad</span>
+                <button class="qty-btn" aria-label="Aumentar cantidad">＋</button>
+              </div>
+            </div>
+            <div class="item-price"><span class="price-val">$14.50</span></div>
+          </li>
+
+          <li class="item">
+            <div class="item-thumb" aria-hidden="true" style="background:linear-gradient(135deg, rgba(255,138,61,.8), rgba(255,176,103,.7));"></div>
+            <div>
+              <h3>Chips Ranch</h3>
+              <p>Precio unitario: $22.00</p>
+              <div class="qty-control">
+                <button class="qty-btn" aria-label="Disminuir cantidad">−</button>
+                <span class="qty">1 unidad</span>
+                <button class="qty-btn" aria-label="Aumentar cantidad">＋</button>
+              </div>
+            </div>
+            <div class="item-price"><span class="price-val">$22.00</span></div>
+          </li>
+        </ul>
+
+        <div class="totals">
+          <div class="row"><span>Subtotal</span><strong>$72.50</strong></div>
+          <div class="row"><span>Descuento</span><strong>-$3.00</strong></div>
+          <div class="row"><span>IVA</span><strong>$11.60</strong></div>
+          <div class="row total"><span>Total</span><strong>$81.10</strong></div>
+        </div>
+
+        <div class="payment-grid" aria-label="Formas de pago">
+          <button class="cash-btn active">Efectivo</button>
+          <button class="cash-btn">Tarjeta</button>
+          <button class="cash-btn">Transferencia</button>
+          <button class="cash-btn">Crédito</button>
+        </div>
+
+        <div class="checkout">
+          <button class="action secondary">Cancelar</button>
+          <button class="action primary">Cobrar $81.10</button>
+        </div>
+      </aside>
+    </main>
+
+    <div class="bottom-bar">
+      <div class="summary"><span>Ventas del día</span><strong>42</strong></div>
+      <div class="summary"><span>Ingresos</span><strong>$2,480.35</strong></div>
+      <div class="summary"><span>Artículos vendidos</span><strong>128</strong></div>
+      <div class="quick-actions">
+        <button class="nav-btn">Inventario</button>
+        <button class="nav-btn">Clientes</button>
+        <button class="nav-btn">Reportes</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagrama ER - Inventario POS</title>
+<style>
+  :root { --bg: #f7f9fb; --text: #24324a; --muted: #65728a; --line: #d7dde8; --panel: #ffffff; --heading: #0f4c81; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 24px; }
+  .container { max-width: 1100px; margin: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 30px 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+  h1 { color: var(--heading); font-size: 30px; margin: 0 0 12px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .section { border-top: 1px solid var(--line); padding-top: 14px; }
+  .table-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .table-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fbfdff; }
+  .table-card h3 { margin: 0 0 8px; font-size: 16px; color: var(--heading); }
+  .table-card ul { margin: 0; padding-left: 18px; font-size: 12px; }
+  .legend { margin-top: 16px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Diagrama Entidad-Relación</h1>
+<div class="subtitle">Sistema de Gestión de Inventario y Punto de Venta</div>
+<div class="section">
+  <div class="table-grid">
+<div class="table-card"><h3>Entidades</h3><ul><li>categorias</li><li>medidas</li><li>almacen</li><li>proveedor</li><li>cliente</li><li>metodo_pago</li><li>usuarios</li><li>caja</li><li>productos</li><li>stock</li><li>movimientos_productos</li><li>compra</li><li>detalle_compra</li><li>venta</li><li>detalle_venta</li><li>detalle_pago</li></ul></div></div></div><div class="section"><h2>Relaciones</h2><ul><li>categorias ||--o{ productos : tiene</li><li>medidas ||--o{ productos : define</li><li>productos ||--o{ stock : registra</li><li>almacen ||--o{ stock : guarda</li><li>productos ||--o{ movimientos_productos : genera</li><li>proveedor ||--o{ compra : entrega</li><li>productos ||--o{ detalle_compra : incluye</li><li>compra ||--o{ detalle_compra : contiene</li><li>cliente ||--o{ venta : realiza</li><li>metodo_pago ||--o{ venta : acepta</li><li>usuarios ||--o{ venta : atiende</li><li>caja ||--o{ venta : procesa</li><li>productos ||--o{ detalle_venta : incluye</li><li>venta ||--o{ detalle_venta : contiene</li><li>metodo_pago ||--o{ detalle_pago : registra</li></ul><div class="legend">Creado el 2026-09-09 · Proyecto Inventario</div></div></div></body></html>

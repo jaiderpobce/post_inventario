@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sistema de Punto de Venta POS - Interfaz interactiva estilo Google Material Design Light Mode con fondo blanco y alta legibilidad.">
+  <title>a2 Punto de Venta — Google Material POS (Fondo Blanco)</title>
+  
+  <!-- Fuentes Google: Roboto, Outfit & Orbitron para pantalla LED -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* PALETA OFICIAL GOOGLE MATERIAL DESIGN 3 - LIGHT MODE (FONDO BLANCO) */
+      --google-blue: #1a73e8;
+      --google-blue-dark: #1557b0;
+      --google-blue-glow: rgba(26, 115, 232, 0.25);
+      
+      --google-red: #d93025;
+      --google-red-glow: rgba(217, 48, 37, 0.2);
+      
+      --google-yellow: #e37400;
+      --google-yellow-glow: rgba(227, 116, 0, 0.2);
+      
+      --google-green: #188038;
+      --google-green-glow: rgba(24, 128, 56, 0.25);
+
+      --bg-dark: #f8f9fa; /* Fondo blanco neutro Google */
+      --bg-card: #ffffff; /* Tarjetas blanco puro */
+      --bg-card-alt: #f1f3f4; /* Superficie secundaria */
+      --panel-border: #dadce0; /* Borde gris claro Google */
+      --panel-hover: rgba(26, 115, 232, 0.08);
+      
+      --text-main: #202124; /* Texto principal oscuro de contraste */
+      --text-muted: #5f6368; /* Texto secundario */
+      --text-dim: #80868b;
+      
+      --cyan: var(--google-blue);
+      --cyan-glow: var(--google-blue-glow);
+      --blue: var(--google-blue-dark);
+      --orange: var(--google-yellow);
+      --green: var(--google-green);
+      --red: var(--google-red);
+      
+      --led-bg: #0f172a; /* Pantalla LED de totales en alto contraste */
+      --led-text: #00e676; /* Dígitos en verde neón de alta visibilidad */
+      --led-glow: 0 0 16px rgba(0, 230, 118, 0.4);
+      
+      --shadow-main: 0 8px 24px rgba(60, 64, 67, 0.12), 0 2px 6px rgba(60, 64, 67, 0.08);
+      --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Roboto', 'Outfit', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 5% 5%, rgba(26, 115, 232, 0.05), transparent 25rem),
+        radial-gradient(circle at 95% 95%, rgba(24, 128, 56, 0.04), transparent 25rem);
+      overflow-x: hidden;
+    }
+
+    /* BARRA SUPERIOR / HEADER GOOGLE LIGHT MODE */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--panel-border);
+      height: 58px;
+      box-shadow: 0 2px 6px rgba(60, 64, 67, 0.06);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: conic-gradient(from 180deg, #4285f4, #ea4335, #fbbc04, #34a853, #4285f4);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: #202124;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-text span {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      background: rgba(26, 115, 232, 0.1);
+      color: var(--google-blue);
+      border-radius: 20px;
+      font-weight: 700;
+      border: 1px solid rgba(26, 115, 232, 0.25);
+    }
+
+    .top-menu {
+      display: flex;
+      gap: 6px;
+    }
+
+    .menu-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .menu-btn:hover, .menu-btn.active {
+      background: rgba(26, 115, 232, 0.1);
+      color: var(--google-blue);
+      border-color: rgba(26, 115, 232, 0.25);
+    }
+
+    .top-shortcuts {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .shortcut-pill {
+      background: #f1f3f4;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .shortcut-pill kbd {
+      background: rgba(26, 115, 232, 0.12);
+      color: var(--google-blue);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+    }
+
+    .shortcut-pill:hover {
+      background: rgba(26, 115, 232, 0.08);
+      border-color: rgba(26, 115, 232, 0.3);
+      color: var(--google-blue);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--google-blue), #34a853);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: white;
+      font-size: 0.8rem;
+    }
+
+    /* LAYOUT PRINCIPAL */
+    .app-container {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      padding: 16px;
+      flex: 1;
+      max-width: 1920px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* SIDEBAR IZQUIERDA - BOTONERA DE FUNCIONES (GRIS CLARO ESCRITORIO) */
+    .sidebar-actions {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      background: var(--bg-card);
+      border: 2px solid #b0b5bc;
+      border-radius: 20px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow-main);
+    }
+
+    .sidebar-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      font-weight: 700;
+      padding: 0 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .fkeys-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      flex: 1;
+    }
+
+    .fkey-card {
+      background: #e8eaed; /* Gris claro clásico de sistema de escritorio */
+      border: 2px solid #b0b5bc;
+      border-radius: 12px;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      min-height: 72px;
+      box-shadow: 0 2px 5px rgba(60, 64, 67, 0.12);
+    }
+
+    .fkey-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--google-blue);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .fkey-card:hover {
+      background: #ffffff;
+      border-color: var(--google-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(26, 115, 232, 0.22);
+    }
+
+    .fkey-card:hover::before {
+      opacity: 1;
+    }
+
+    .fkey-card:active {
+      transform: translateY(0);
+    }
+
+    .fkey-header {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+    }
+
+    .fkey-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(26, 115, 232, 0.15);
+      color: #1557b0;
+    }
+
+    .fkey-card.accent-yellow { border-color: rgba(227, 116, 0, 0.5); background: #fce8e6; }
+    .fkey-card.accent-yellow .fkey-badge { background: rgba(227, 116, 0, 0.15); color: #b05c00; }
+    .fkey-card.accent-yellow:hover { background: #ffffff; border-color: var(--google-yellow); box-shadow: 0 6px 16px var(--google-yellow-glow); }
+
+    .fkey-card.accent-green { border-color: rgba(24, 128, 56, 0.5); background: #e6f4ea; }
+    .fkey-card.accent-green .fkey-badge { background: rgba(24, 128, 56, 0.15); color: #137333; }
+    .fkey-card.accent-green:hover { background: #ffffff; border-color: var(--google-green); box-shadow: 0 6px 16px var(--google-green-glow); }
+
+    .fkey-card.accent-red { border-color: rgba(217, 48, 37, 0.5); background: #fce8e6; }
+    .fkey-card.accent-red .fkey-badge { background: rgba(217, 48, 37, 0.15); color: #c5221f; }
+    .fkey-card.accent-red:hover { background: #ffffff; border-color: var(--google-red); box-shadow: 0 6px 16px var(--google-red-glow); }
+
+    .fkey-icon {
+      font-size: 1.1rem;
+    }
+
+    .fkey-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 6px;
+    }
+
+    /* PANTALLA SUPERIOR DERECHA - PANEL DE VISUAL BASIC / CLÁSICO DE ESCRITORIO */
+    .top-display-panel {
+      grid-column: 2;
+      grid-row: 1;
+      background: #e4e7eb; /* Gris clásico de panel Visual Basic / Windows POS */
+      border: 2px solid #b0b5bc;
+      border-radius: 16px;
+      padding: 14px 20px;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 16px;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(60, 64, 67, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* COLUMNA 1: DATOS DEL CLIENTE ACTIVO EN PANEL SUPERIOR (VB STYLE - TEXTO OSCURO LEGIBLE) */
+    .top-customer-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      border-right: 2px solid #c4c8cf;
+      padding-right: 18px;
+    }
+
+    .top-customer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .top-customer-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #1557b0;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .top-customer-name {
+      font-family: 'Outfit', 'Roboto', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #111827;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-customer-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: #4b5563;
+      flex-wrap: wrap;
+    }
+
+    .top-customer-meta strong {
+      color: #000000;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+    }
+
+    .cust-badge {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      border: 1px solid #bfdbfe;
+    }
+
+    /* COLUMNA 2: PANTALLA TOTALES TIPO VISUAL BASIC / LED DIGITAL DISPLAY RECESSED BOX */
+    .top-totals-col {
+      background: #090d16; /* Recuadro LCD empotrado estilo hardware POS VB */
+      border: 2px solid #848992;
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+    }
+
+    .display-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .display-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #94a3b8;
+      margin-bottom: 2px;
+    }
+
+    .display-val-sub {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #60a5fa;
+      text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+    }
+
+    .display-val-main {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--led-text);
+      text-shadow: var(--led-glow);
+      letter-spacing: 0.05em;
+    }
+
+    /* AREA CENTRAL - TABLA DE TRANSACCIÓN */
+    .main-workspace {
+      grid-column: 2;
+      grid-row: 2;
+      background: var(--bg-card);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow-main);
+    }
+
+    /* BARRA DE BÚSQUEDA RÁPIDA DE PRODUCTOS */
+    .search-bar-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-wrapper span {
+      position: absolute;
+      left: 14px;
+      font-size: 1.1rem;
+      color: var(--text-dim);
+    }
+
+    .search-input {
+      width: 100%;
+      background: #f8f9fa;
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 12px 14px 12px 42px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-input:focus {
+      border-color: var(--google-blue);
+      box-shadow: 0 0 0 3px var(--google-blue-glow);
+      background: #ffffff;
+    }
+
+    .btn-quick-add {
+      background: linear-gradient(135deg, var(--google-blue), var(--google-blue-dark));
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      padding: 0 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px var(--google-blue-glow);
+    }
+
+    .btn-quick-add:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    /* TABLA DE PRODUCTOS */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      background: #ffffff;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #dadce0;
+      border-radius: 3px;
+    }
+
+    .pos-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .pos-table th {
+      position: sticky;
+      top: 0;
+      background: #f1f3f4;
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--panel-border);
+      z-index: 2;
+    }
+
+    .pos-table td {
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #f1f3f4;
+      color: var(--text-main);
+    }
+
+    .pos-table tr {
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .pos-table tr:hover {
+      background: rgba(26, 115, 232, 0.04);
+    }
+
+    .pos-table tr.selected {
+      background: rgba(26, 115, 232, 0.08);
+      border-left: 4px solid var(--google-blue);
+    }
+
+    .code-col {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--google-blue);
+      font-size: 0.8rem;
+    }
+
+    .qty-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f3f4;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--panel-border);
+    }
+
+    .qty-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-weight: 800;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+    }
+
+    .qty-btn:hover {
+      background: #ffffff;
+      color: var(--google-blue);
+    }
+
+    .qty-val {
+      font-weight: 700;
+      min-width: 20px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    .price-col, .total-col {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .total-col {
+      color: #202124;
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+
+    .delete-btn:hover {
+      color: var(--google-red);
+      background: rgba(217, 48, 37, 0.1);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text-dim);
+      gap: 10px;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      opacity: 0.4;
+    }
+
+    /* BARRA INFERIOR DE ESTADO / FOOTER */
+    .bottom-bar {
+      grid-column: 1 / span 2;
+      grid-row: 3;
+      background: var(--bg-card);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      box-shadow: var(--shadow-main);
+    }
+
+    .status-items {
+      display: flex;
+      gap: 24px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-item strong {
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .online-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--google-green);
+      box-shadow: 0 0 10px var(--google-green);
+    }
+
+    /* MODALES INTERACTIVOS ESTILO GOOGLE MATERIAL 3 LIGHT */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(32, 33, 36, 0.6);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      width: 540px;
+      max-width: 90vw;
+      padding: 24px;
+      box-shadow: 0 20px 48px rgba(60, 64, 67, 0.3);
+      transform: scale(0.95);
+      transition: var(--transition);
+    }
+
+    .modal-overlay.active .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #202124;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .modal-close:hover { color: #202124; }
+
+    /* CHECKOUT FORM IN MODAL */
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .pm-btn {
+      background: #f8f9fa;
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-main);
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .pm-btn.active, .pm-btn:hover {
+      border-color: var(--google-green);
+      background: rgba(24, 128, 56, 0.08);
+      color: var(--google-green);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .form-control {
+      width: 100%;
+      background: #f8f9fa;
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #202124;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--google-blue);
+      background: #ffffff;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn-modal {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-modal.secondary {
+      background: #f1f3f4;
+      color: var(--text-main);
+    }
+
+    .btn-modal.primary {
+      background: linear-gradient(135deg, var(--google-green), #137333);
+      color: #fff;
+      box-shadow: 0 4px 14px var(--google-green-glow);
+    }
+
+    .btn-modal.primary:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    /* TARJETA RESUMEN CLIENTE EN MODAL CHECKOUT */
+    .checkout-customer-summary {
+      background: rgba(26, 115, 232, 0.06);
+      border: 1px solid rgba(26, 115, 232, 0.2);
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+
+    .checkout-customer-summary h4 {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--google-blue);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .checkout-customer-summary p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: 2px 0;
+    }
+
+    /* NOTIFICACIÓN TOAST GOOGLE STYLE */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #202124;
+      border: 1px solid var(--google-blue);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 2000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1100px) {
+      .top-display-panel {
+        grid-template-columns: 1fr;
+      }
+      .top-customer-col {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        padding-right: 0;
+        padding-bottom: 12px;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+      .sidebar-actions {
+        grid-column: 1;
+        grid-row: auto;
+      }
+      .fkeys-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .top-display-panel {
+        grid-column: 1;
+        grid-row: auto;
+      }
+      .main-workspace {
+        grid-column: 1;
+        grid-row: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">G</div>
+      <div class="brand-text">
+        <h1>a2 POS <span>Material 3 Light</span></h1>
+      </div>
+    </div>
+
+    <nav class="top-menu">
+      <button class="menu-btn active" id="btn-menu-op">Operaciones</button>
+      <button class="menu-btn" id="btn-menu-rep">Reportes</button>
+      <button class="menu-btn" id="btn-menu-sys">Sistema</button>
+    </nav>
+
+    <div class="top-shortcuts">
+      <div class="shortcut-pill" onclick="triggerFKey('F11')"><kbd>Alt+F2</kbd> Consulta</div>
+      <div class="shortcut-pill" onclick="showToast('Sistema Bloqueado. Presione clave para desbloquear.')"><kbd>Alt+F3</kbd> Bloqueo</div>
+      <div class="shortcut-pill" onclick="triggerFKey('F6')"><kbd>Alt+F4</kbd> Manejo</div>
+      <div class="shortcut-pill" onclick="triggerFKey('F10')"><kbd>Alt+F10</kbd> Corte X</div>
+      <div class="shortcut-pill" onclick="clearSale()"><kbd>Esc</kbd> Limpiar</div>
+    </div>
+
+    <div class="user-info">
+      <div class="user-avatar">LM</div>
+      <div>
+        <div style="font-weight: 700; color: #202124;">Laura Morales</div>
+        <div style="font-size: 0.7rem; color: var(--text-dim);" id="live-clock">--:--:--</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL DEL POS -->
+  <main class="app-container">
+
+    <!-- IZQUIERDA: BOTONERA DE TECLAS DE FUNCIÓN (FONDO BLANCO) -->
+    <aside class="sidebar-actions">
+      <div class="sidebar-title">
+        <span>Teclas de Función</span>
+        <span style="font-size: 0.65rem; color: var(--google-blue);">Google Light</span>
+      </div>
+
+      <div class="fkeys-grid">
+        <div class="fkey-card" onclick="triggerFKey('F1')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F1</span>
+            <span class="fkey-icon">👤</span>
+          </div>
+          <span class="fkey-label">Clientes</span>
+        </div>
+
+        <div class="fkey-card accent-yellow" onclick="triggerFKey('F2')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F2</span>
+            <span class="fkey-icon">↩️</span>
+          </div>
+          <span class="fkey-label">Devolución</span>
+        </div>
+
+        <div class="fkey-card accent-red" onclick="triggerFKey('F3')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F3</span>
+            <span class="fkey-icon">🚫</span>
+          </div>
+          <span class="fkey-label">Anular</span>
+        </div>
+
+        <div class="fkey-card accent-red" onclick="triggerFKey('F4')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F4</span>
+            <span class="fkey-icon">🗑️</span>
+          </div>
+          <span class="fkey-label">Eliminar</span>
+        </div>
+
+        <div class="fkey-card" onclick="triggerFKey('F5')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F5</span>
+            <span class="fkey-icon">🔢</span>
+          </div>
+          <span class="fkey-label">Cantidad</span>
+        </div>
+
+        <div class="fkey-card" onclick="triggerFKey('F6')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F6</span>
+            <span class="fkey-icon">📂</span>
+          </div>
+          <span class="fkey-label">Cargar</span>
+        </div>
+
+        <div class="fkey-card" onclick="triggerFKey('F7')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F7</span>
+            <span class="fkey-icon">💾</span>
+          </div>
+          <span class="fkey-label">Guardar</span>
+        </div>
+
+        <div class="fkey-card" onclick="triggerFKey('F8')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F8</span>
+            <span class="fkey-icon">📋</span>
+          </div>
+          <span class="fkey-label">Preliminar</span>
+        </div>
+
+        <div class="fkey-card" onclick="triggerFKey('F9')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F9</span>
+            <span class="fkey-icon">🖨️</span>
+          </div>
+          <span class="fkey-label">Reimprimir</span>
+        </div>
+
+        <div class="fkey-card accent-green" onclick="triggerFKey('F10')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F10</span>
+            <span class="fkey-icon">💳</span>
+          </div>
+          <span class="fkey-label">Totalizar</span>
+        </div>
+
+        <div class="fkey-card" onclick="triggerFKey('F11')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F11</span>
+            <span class="fkey-icon">🏷️</span>
+          </div>
+          <span class="fkey-label">Precios</span>
+        </div>
+
+        <div class="fkey-card" onclick="triggerFKey('F12')">
+          <div class="fkey-header">
+            <span class="fkey-badge">F12</span>
+            <span class="fkey-icon">🔍</span>
+          </div>
+          <span class="fkey-label">Detalle</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- DERECHA SUPERIOR: PANEL DIVIDIDO EN 2 COLUMNAS (COL 1: CLIENTE ACTIVO | COL 2: TOTALES LED EN ALTO CONTRASTE) -->
+    <section class="top-display-panel">
+      <!-- COLUMNA 1: CLIENTE ACTIVO -->
+      <div class="top-customer-col">
+        <div class="top-customer-header">
+          <span class="top-customer-tag">👤 Cliente de Facturación</span>
+          <button class="shortcut-pill" onclick="openCustomerModal()" style="padding: 4px 10px; font-size: 0.75rem; background: #ffffff; border: 1.5px solid #b0b5bc; color: #000000; font-weight: 800; cursor: pointer;"><kbd style="background: rgba(26,115,232,0.15); color: #1557b0; font-weight: 900;">F1</kbd> Cambiar Cliente</button>
+        </div>
+
+        <h3 class="top-customer-name" id="display-cust-name">Distribuidora Alimentos Globales C.A.</h3>
+
+        <div class="top-customer-meta">
+          <span>RIF/CI: <strong id="display-cust-doc">J-30948201-9</strong></span>
+          <span>Tel: <strong id="display-cust-phone">0412-9876543</strong></span>
+          <span class="cust-badge" id="display-cust-type">Contribuyente Especial</span>
+        </div>
+      </div>
+
+      <!-- COLUMNA 2: PANTALLA LED DE TOTALES HIGH CONTRAST -->
+      <div class="top-totals-col">
+        <div class="display-group">
+          <span class="display-label">SUBTOTAL</span>
+          <span class="display-val-sub" id="display-subtotal">$0.00</span>
+        </div>
+
+        <div class="display-group" style="align-items: center;">
+          <span class="display-label">I.V.A (16%)</span>
+          <span class="display-val-sub" id="display-iva">$0.00</span>
+        </div>
+
+        <div class="display-group" style="align-items: flex-end;">
+          <span class="display-label">TOTAL PAGO</span>
+          <span class="display-val-main" id="display-total">$0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÁREA CENTRAL DE TRANSACCIÓN -->
+    <section class="main-workspace">
+      <!-- BÚSQUEDA / ESCÁNER BARRA -->
+      <div class="search-bar-container">
+        <div class="search-input-wrapper">
+          <span>🔍</span>
+          <input type="text" id="barcode-input" class="search-input" placeholder="Escriba el nombre, código de barras o presione F11 para buscar (ej: 001, Coca Cola, Agua)..." autocomplete="off">
+        </div>
+        <button class="btn-quick-add" onclick="addCustomProductPrompt()">＋ Agregar Ítem</button>
+      </div>
+
+      <!-- TABLA DE PRODUCTOS -->
+      <div class="table-container">
+        <table class="pos-table" id="pos-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">#</th>
+              <th style="width: 120px;">Código</th>
+              <th>Descripción</th>
+              <th style="width: 140px; text-align: center;">Cantidad</th>
+              <th style="width: 120px; text-align: right;">Precio Unit.</th>
+              <th style="width: 100px; text-align: right;">IVA</th>
+              <th style="width: 130px; text-align: right;">Total</th>
+              <th style="width: 50px; text-align: center;"></th>
+            </tr>
+          </thead>
+          <tbody id="pos-table-body">
+            <!-- Renderizado dinámico vía JavaScript -->
+          </tbody>
+        </table>
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">🛒</div>
+          <h3>Ticket de Venta Vacío</h3>
+          <p>Escanee un código de barras o busque productos con <kbd style="background: rgba(0,0,0,0.06); border: 1px solid #dadce0; padding: 2px 6px; border-radius: 4px;">F11</kbd></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIE DE PÁGINA Y ESTADO -->
+    <footer class="bottom-bar">
+      <div class="status-items">
+        <div class="status-item">
+          <span>Total Líneas:</span>
+          <strong id="stat-lines">0</strong>
+        </div>
+        <div class="status-item">
+          <span>Ítems Totales:</span>
+          <strong id="stat-items">0</strong>
+        </div>
+        <div class="status-item">
+          <span>Último Ticket:</span>
+          <strong>#002488</strong>
+        </div>
+        <div class="status-item">
+          <span>Caja:</span>
+          <strong>#01 (Principal)</strong>
+        </div>
+      </div>
+
+      <div class="status-item">
+        <span class="online-indicator"></span>
+        <span style="color: var(--google-green); font-weight: 700;">Servidor Google a2 Conectado</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- MODAL F1: BÚSQUEDA Y GESTIÓN DE CLIENTES -->
+  <div class="modal-overlay" id="modal-customer">
+    <div class="modal-box" style="width: 680px;">
+      <div class="modal-header">
+        <h3>👤 Buscar y Seleccionar Cliente (F1)</h3>
+        <button class="modal-close" onclick="closeModal('modal-customer')">✕</button>
+      </div>
+
+      <div class="search-input-wrapper" style="margin-bottom: 16px;">
+        <span>🔍</span>
+        <input type="text" id="customer-search" class="search-input" placeholder="Buscar por RIF, cédula, nombre o correo..." oninput="filterCustomerList()">
+      </div>
+
+      <div style="max-height: 280px; overflow-y: auto; border: 1px solid var(--panel-border); border-radius: 10px; margin-bottom: 16px;">
+        <table class="pos-table">
+          <thead>
+            <tr>
+              <th>RIF / CI</th>
+              <th>Nombre / Razón Social</th>
+              <th>Teléfono</th>
+              <th>Tipo</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="customer-table-body">
+            <!-- Clientes dinámicos -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal secondary" onclick="closeModal('modal-customer')">Cerrar (Esc)</button>
+        <button class="btn-modal primary" onclick="promptNewCustomer(); closeModal('modal-customer');">＋ Registrar Nuevo Cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL F10: COBRAR Y TOTALIZAR -->
+  <div class="modal-overlay" id="modal-checkout">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>💳 Totalizar Venta — Facturación</h3>
+        <button class="modal-close" onclick="closeModal('modal-checkout')">✕</button>
+      </div>
+
+      <!-- RESUMEN DEL CLIENTE DE FACTURACIÓN -->
+      <div class="checkout-customer-summary">
+        <h4><span id="chk-cust-name">Distribuidora Alimentos Globales C.A.</span> <span style="font-size: 0.72rem; color: var(--google-green);" id="chk-cust-type">Contribuyente Especial</span></h4>
+        <p><strong>RIF/CI:</strong> <span id="chk-cust-doc">J-30948201-9</span> | <strong>Teléfono:</strong> <span id="chk-cust-phone">0412-9876543</span></p>
+        <p><strong>Dirección:</strong> <span id="chk-cust-address">Av. Francisco de Miranda, Edificio Centro Empresarial, Piso 4, Caracas</span></p>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px; padding: 14px; background: rgba(24, 128, 56, 0.08); border-radius: 14px; border: 1px solid rgba(24, 128, 56, 0.25);">
+        <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">MONTO TOTAL A COBRAR</span>
+        <span style="font-family: 'Orbitron', monospace; font-size: 2.2rem; font-weight: 900; color: var(--google-green);" id="modal-pay-total">$0.00</span>
+      </div>
+
+      <div class="form-group">
+        <label>Método de Pago</label>
+        <div class="payment-methods">
+          <button class="pm-btn active" onclick="setPaymentMethod('EFECTIVO')">💵 Efectivo</button>
+          <button class="pm-btn" onclick="setPaymentMethod('TARJETA')">💳 Tarjeta / POS</button>
+          <button class="pm-btn" onclick="setPaymentMethod('PAGO_MOVIL')">📱 Pago Móvil</button>
+          <button class="pm-btn" onclick="setPaymentMethod('TRANSFERENCIA')">🏦 Transferencia</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Monto Recibido ($)</label>
+        <input type="number" id="input-paid-amount" class="form-control" placeholder="0.00" step="0.01" oninput="calculateChange()">
+      </div>
+
+      <div class="form-group">
+        <label>Vuelto / Cambio Estimado ($)</label>
+        <input type="text" id="input-change-amount" class="form-control" value="$0.00" readonly style="color: var(--google-green); font-weight: 900;">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-modal secondary" onclick="closeModal('modal-checkout')">Cancelar (Esc)</button>
+        <button class="btn-modal primary" onclick="processFinalPayment()">Confirmar Factura (Enter)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL F11: CONSULTA DE PRODUCTOS -->
+  <div class="modal-overlay" id="modal-catalog">
+    <div class="modal-box" style="width: 680px;">
+      <div class="modal-header">
+        <h3>🏷️ Catálogo y Precios de Productos (F11)</h3>
+        <button class="modal-close" onclick="closeModal('modal-catalog')">✕</button>
+      </div>
+
+      <div class="search-input-wrapper" style="margin-bottom: 16px;">
+        <span>🔍</span>
+        <input type="text" id="catalog-search" class="search-input" placeholder="Filtrar catálogo..." oninput="filterCatalog()">
+      </div>
+
+      <div style="max-height: 320px; overflow-y: auto; border: 1px solid var(--panel-border); border-radius: 10px;">
+        <table class="pos-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Producto</th>
+              <th>Stock</th>
+              <th style="text-align: right;">Precio</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="catalog-table-body">
+            <!-- Productos renderizados -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICACIÓN -->
+  <div class="toast" id="toast">
+    <span id="toast-icon">✨</span>
+    <span id="toast-msg">Mensaje del sistema</span>
+  </div>
+
+  <script>
+    // BASE DE DATOS DEMO DE CLIENTES
+    const CUSTOMER_DATABASE = [
+      { id: 1, doc: 'J-30948201-9', name: 'Distribuidora Alimentos Globales C.A.', phone: '0412-9876543', email: 'compras@alimentosglobales.com', address: 'Av. Francisco de Miranda, Edificio Centro Empresarial, Piso 4, Caracas', type: 'Contribuyente Especial' },
+      { id: 2, doc: 'V-18492018-4', name: 'Juan Carlos Pérez', phone: '0414-5551234', email: 'juan.perez@gmail.com', address: 'Urb. El Bosque, Calle 3, Casa #14, Valencia', type: 'Consumidor Final' },
+      { id: 3, doc: 'J-40291823-1', name: 'Comercializadora Los Andes S.A.', phone: '0424-8889900', email: 'ventas@losandes.com', address: 'Zona Industrial II, Galpón B-7, Barquisimeto', type: 'Cliente VIP / Crédito' },
+      { id: 4, doc: 'V-22109845-0', name: 'María Fernanda Gómez', phone: '0416-3334455', email: 'mfgomez@hotmail.com', address: 'Av. Bolívar, Res. La Floresta, Apt 8B, Maracay', type: 'Consumidor Final' }
+    ];
+
+    // BASE DE DATOS DEMO DE PRODUCTOS
+    const PRODUCT_DATABASE = [
+      { id: 1, code: '001234', name: 'Coca Cola 600ml', price: 18.00, stock: 45, unit: 'UND' },
+      { id: 2, code: '001241', name: 'Yogur Natural 250g', price: 14.50, stock: 28, unit: 'UND' },
+      { id: 3, code: '001308', name: 'Chips Ranch 150g', price: 22.00, stock: 19, unit: 'UND' },
+      { id: 4, code: '001410', name: 'Jabón Líquido Aseo', price: 39.90, stock: 12, unit: 'UND' },
+      { id: 5, code: '001519', name: 'Pañuelos Desechables', price: 12.00, stock: 50, unit: 'UND' },
+      { id: 6, code: '001670', name: 'Galletas Integrales Pack', price: 26.50, stock: 33, unit: 'UND' },
+      { id: 7, code: '001875', name: 'Pasta Dental 100ml', price: 31.00, stock: 21, unit: 'UND' },
+      { id: 8, code: '001992', name: 'Agua Mineral 1.5L', price: 10.00, stock: 60, unit: 'UND' }
+    ];
+
+    // ESTADO DE LA VENTA Y CLIENTE ACTUAL
+    let activeCustomer = { ...CUSTOMER_DATABASE[0] };
+    let currentCart = [];
+    let selectedRowIndex = -1;
+    let selectedPaymentMethod = 'EFECTIVO';
+    const TAX_RATE = 0.16;
+
+    // INICIALIZACIÓN
+    document.addEventListener('DOMContentLoaded', () => {
+      updateClock();
+      setInterval(updateClock, 1000);
+      renderCatalog();
+      renderCartTable();
+      renderCustomerList();
+      updateTopCustomerDisplay();
+
+      // Listener para escáner / buscador rápido
+      const barcodeInput = document.getElementById('barcode-input');
+      barcodeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const query = barcodeInput.value.trim();
+          if (query) {
+            handleQuickSearch(query);
+            barcodeInput.value = '';
+          }
+        }
+      });
+
+      // Captura global de teclas de función F1 - F12
+      window.addEventListener('keydown', (e) => {
+        if (e.key.startsWith('F') && e.key.length <= 3) {
+          e.preventDefault();
+          triggerFKey(e.key);
+        } else if (e.key === 'Escape') {
+          closeAllModals();
+        }
+      });
+    });
+
+    // RELOJ EN TIEMPO REAL
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('live-clock').textContent = now.toLocaleTimeString();
+    }
+
+    // ACTUALIZAR PANTALLA SUPERIOR DEL CLIENTE
+    function updateTopCustomerDisplay() {
+      document.getElementById('display-cust-name').textContent = activeCustomer.name || 'Cliente Genérico';
+      document.getElementById('display-cust-doc').textContent = activeCustomer.doc || 'Sin Documento';
+      document.getElementById('display-cust-phone').textContent = activeCustomer.phone || 'Sin Teléfono';
+      document.getElementById('display-cust-type').textContent = activeCustomer.type || 'Consumidor Final';
+    }
+
+    // CARGAR CLIENTE SELECCIONADO
+    function loadCustomerIntoPanel(cust) {
+      activeCustomer = { ...cust };
+      updateTopCustomerDisplay();
+      showToast(`👤 Cliente cargado: ${cust.name}`);
+    }
+
+    // REGISTRAR NUEVO CLIENTE RÁPIDO
+    function promptNewCustomer() {
+      const name = prompt('Nombre completo o Razón Social del nuevo cliente:');
+      if (!name) return;
+      const doc = prompt('Número de Documento (RIF / C.I):', 'V-00000000-0');
+      const phone = prompt('Número de teléfono:', '0412-0000000');
+      const email = prompt('Correo electrónico:', 'cliente@email.com');
+      const address = prompt('Dirección fiscal corta:', 'Ciudad');
+
+      const newCust = {
+        id: Date.now(),
+        doc: doc || 'V-00000000-0',
+        name: name,
+        phone: phone || '',
+        email: email || '',
+        address: address || 'Sin dirección',
+        type: 'Consumidor Final'
+      };
+
+      CUSTOMER_DATABASE.push(newCust);
+      loadCustomerIntoPanel(newCust);
+      renderCustomerList();
+    }
+
+    // MANEJADOR DE TECLAS DE FUNCIÓN
+    function triggerFKey(key) {
+      switch (key) {
+        case 'F1':
+          openCustomerModal();
+          break;
+        case 'F2':
+          showToast('↩️ Módulo de Devoluciones listo');
+          break;
+        case 'F3':
+          if (currentCart.length > 0) {
+            if (confirm('¿Desea anular la venta actual?')) {
+              clearSale();
+              showToast('🚫 Venta anulada');
+            }
+          } else {
+            showToast('⚠️ No hay productos en la venta actual');
+          }
+          break;
+        case 'F4':
+          if (selectedRowIndex >= 0 && selectedRowIndex < currentCart.length) {
+            deleteCartItem(selectedRowIndex);
+            showToast('🗑️ Producto eliminado');
+          } else {
+            showToast('⚠️ Seleccione un producto para eliminar');
+          }
+          break;
+        case 'F5':
+          if (selectedRowIndex >= 0 && selectedRowIndex < currentCart.length) {
+            const newQty = prompt('Ingrese la nueva cantidad:', currentCart[selectedRowIndex].qty);
+            if (newQty && !isNaN(newQty) && parseInt(newQty) > 0) {
+              currentCart[selectedRowIndex].qty = parseInt(newQty);
+              renderCartTable();
+              showToast('🔢 Cantidad actualizada');
+            }
+          } else {
+            showToast('⚠️ Seleccione una fila primero para cambiar la cantidad');
+          }
+          break;
+        case 'F6':
+          showToast('📂 Cargar factura borrador');
+          break;
+        case 'F7':
+          if (currentCart.length > 0) {
+            showToast('💾 Venta en borrador guardada con éxito');
+          } else {
+            showToast('⚠️ Agregue productos antes de guardar borrador');
+          }
+          break;
+        case 'F8':
+          if (currentCart.length > 0) {
+            showToast('📋 Generando comprobante preliminar...');
+          } else {
+            showToast('⚠️ Venta vacía');
+          }
+          break;
+        case 'F9':
+          showToast('🖨️ Reimprimiendo último comprobante #002488...');
+          break;
+        case 'F10':
+          openCheckoutModal();
+          break;
+        case 'F11':
+          openCatalogModal();
+          break;
+        case 'F12':
+          if (selectedRowIndex >= 0 && selectedRowIndex < currentCart.length) {
+            const item = currentCart[selectedRowIndex];
+            alert(`Detalles del Ítem:\n\nCódigo: ${item.code}\nDescripción: ${item.name}\nPrecio Unitario: $${item.price.toFixed(2)}\nCantidad: ${item.qty}\nSubtotal: $${(item.price * item.qty).toFixed(2)}`);
+          } else {
+            showToast('⚠️ Seleccione un producto para ver su detalle');
+          }
+          break;
+      }
+    }
+
+    // BÚSQUEDA RÁPIDA DE PRODUCTOS
+    function handleQuickSearch(query) {
+      const q = query.toLowerCase();
+      const match = PRODUCT_DATABASE.find(p => p.code.toLowerCase() === q || p.name.toLowerCase().includes(q));
+      
+      if (match) {
+        addToCart(match);
+      } else {
+        showToast(`❌ Producto "${query}" no encontrado.`);
+      }
+    }
+
+    // AGREGAR AL CARRITO
+    function addToCart(product) {
+      const existing = currentCart.find(item => item.id === product.id);
+      if (existing) {
+        existing.qty++;
+      } else {
+        currentCart.push({ ...product, qty: 1 });
+      }
+      selectedRowIndex = currentCart.length - 1;
+      renderCartTable();
+      showToast(`✅ Agregado: ${product.name}`);
+    }
+
+    // PROMPT AGREGAR PRODUCTO PERSONALIZADO
+    function addCustomProductPrompt() {
+      const name = prompt('Nombre o descripción del producto:');
+      if (!name) return;
+      const price = parseFloat(prompt('Precio unitario ($):', '15.00'));
+      if (isNaN(price) || price <= 0) return;
+
+      const newProduct = {
+        id: Date.now(),
+        code: 'GEN-' + Math.floor(1000 + Math.random() * 9000),
+        name: name,
+        price: price,
+        stock: 99,
+        unit: 'UND'
+      };
+
+      addToCart(newProduct);
+    }
+
+    // CAMBIAR CANTIDAD
+    function updateItemQty(index, delta) {
+      if (currentCart[index]) {
+        currentCart[index].qty += delta;
+        if (currentCart[index].qty <= 0) {
+          currentCart.splice(index, 1);
+        }
+        renderCartTable();
+      }
+    }
+
+    // ELIMINAR ÍTEM
+    function deleteCartItem(index) {
+      currentCart.splice(index, 1);
+      if (selectedRowIndex >= currentCart.length) {
+        selectedRowIndex = currentCart.length - 1;
+      }
+      renderCartTable();
+    }
+
+    // LIMPIAR VENTA COMPLETA
+    function clearSale() {
+      currentCart = [];
+      selectedRowIndex = -1;
+      renderCartTable();
+    }
+
+    // RENDERIZADO DE TABLA Y TOTALES
+    function renderCartTable() {
+      const tbody = document.getElementById('pos-table-body');
+      const emptyState = document.getElementById('empty-state');
+      tbody.innerHTML = '';
+
+      if (currentCart.length === 0) {
+        emptyState.style.display = 'flex';
+      } else {
+        emptyState.style.display = 'none';
+
+        currentCart.forEach((item, idx) => {
+          const rowSubtotal = item.price * item.qty;
+          const rowTax = rowSubtotal * TAX_RATE;
+          const rowTotal = rowSubtotal + rowTax;
+
+          const tr = document.createElement('tr');
+          if (idx === selectedRowIndex) tr.classList.add('selected');
+
+          tr.onclick = () => {
+            selectedRowIndex = idx;
+            renderCartTable();
+          };
+
+          tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td class="code-col">${item.code}</td>
+            <td><strong>${item.name}</strong></td>
+            <td style="text-align: center;">
+              <div class="qty-controls">
+                <button class="qty-btn" onclick="event.stopPropagation(); updateItemQty(${idx}, -1)">-</button>
+                <span class="qty-val">${item.qty}</span>
+                <button class="qty-btn" onclick="event.stopPropagation(); updateItemQty(${idx}, 1)">+</button>
+              </div>
+            </td>
+            <td class="price-col" style="text-align: right;">$${item.price.toFixed(2)}</td>
+            <td style="text-align: right; color: var(--text-muted); font-size: 0.8rem;">$${rowTax.toFixed(2)}</td>
+            <td class="total-col" style="text-align: right;">$${rowTotal.toFixed(2)}</td>
+            <td style="text-align: center;">
+              <button class="delete-btn" onclick="event.stopPropagation(); deleteCartItem(${idx})" title="Eliminar">🗑️</button>
+            </td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      calculateTotals();
+    }
+
+    // CÁLCULO DE TOTALES (SUBTOTAL, IVA, TOTAL)
+    function calculateTotals() {
+      let subtotal = 0;
+      let totalItems = 0;
+
+      currentCart.forEach(item => {
+        subtotal += item.price * item.qty;
+        totalItems += item.qty;
+      });
+
+      const iva = subtotal * TAX_RATE;
+      const total = subtotal + iva;
+
+      document.getElementById('display-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+      document.getElementById('display-iva').textContent = `$${iva.toFixed(2)}`;
+      document.getElementById('display-total').textContent = `$${total.toFixed(2)}`;
+
+      document.getElementById('stat-lines').textContent = currentCart.length;
+      document.getElementById('stat-items').textContent = totalItems;
+    }
+
+    // MODAL CHECKOUT
+    function openCheckoutModal() {
+      if (currentCart.length === 0) {
+        showToast('⚠️ Debe agregar productos antes de cobrar (F10)');
+        return;
+      }
+
+      // Cargar datos en la tarjeta del modal de pago
+      document.getElementById('chk-cust-name').textContent = activeCustomer.name || 'Cliente Genérico';
+      document.getElementById('chk-cust-doc').textContent = activeCustomer.doc || 'Sin Documento';
+      document.getElementById('chk-cust-phone').textContent = activeCustomer.phone || 'Sin Teléfono';
+      document.getElementById('chk-cust-address').textContent = activeCustomer.address || 'Sin Dirección Registrada';
+      document.getElementById('chk-cust-type').textContent = activeCustomer.type;
+
+      let subtotal = currentCart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      let total = subtotal * (1 + TAX_RATE);
+
+      document.getElementById('modal-pay-total').textContent = `$${total.toFixed(2)}`;
+      document.getElementById('input-paid-amount').value = total.toFixed(2);
+      calculateChange();
+
+      document.getElementById('modal-checkout').classList.add('active');
+    }
+
+    function setPaymentMethod(method) {
+      selectedPaymentMethod = method;
+      document.querySelectorAll('.pm-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function calculateChange() {
+      let subtotal = currentCart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      let total = subtotal * (1 + TAX_RATE);
+      let paid = parseFloat(document.getElementById('input-paid-amount').value) || 0;
+
+      let change = paid - total;
+      const changeEl = document.getElementById('input-change-amount');
+      if (change >= 0) {
+        changeEl.value = `$${change.toFixed(2)}`;
+        changeEl.style.color = 'var(--google-green)';
+      } else {
+        changeEl.value = `Faltan $${Math.abs(change).toFixed(2)}`;
+        changeEl.style.color = 'var(--google-red)';
+      }
+    }
+
+    function processFinalPayment() {
+      let subtotal = currentCart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      let total = subtotal * (1 + TAX_RATE);
+      let paid = parseFloat(document.getElementById('input-paid-amount').value) || 0;
+
+      if (paid < total) {
+        alert('El monto ingresado es menor al total a pagar.');
+        return;
+      }
+
+      closeModal('modal-checkout');
+      alert(`🎉 ¡Factura emitida con éxito!\n\nFactura #002489\nCliente: ${activeCustomer.name} (${activeCustomer.doc})\nMétodo de Pago: ${selectedPaymentMethod}\nTotal Facturado: $${total.toFixed(2)}\nCambio: $${(paid - total).toFixed(2)}`);
+      clearSale();
+    }
+
+    // MODAL Y TABLA DE CLIENTES (F1)
+    function openCustomerModal() {
+      renderCustomerList();
+      document.getElementById('modal-customer').classList.add('active');
+    }
+
+    function filterCustomerList() {
+      const q = document.getElementById('customer-search').value.toLowerCase();
+      renderCustomerList(q);
+    }
+
+    function renderCustomerList(filter = '') {
+      const tbody = document.getElementById('customer-table-body');
+      tbody.innerHTML = '';
+
+      const filtered = CUSTOMER_DATABASE.filter(c => 
+        c.name.toLowerCase().includes(filter) || 
+        c.doc.toLowerCase().includes(filter) ||
+        c.email.toLowerCase().includes(filter)
+      );
+
+      filtered.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="code-col">${c.doc}</td>
+          <td><strong>${c.name}</strong></td>
+          <td style="font-size: 0.8rem; color: var(--text-muted);">${c.phone}</td>
+          <td><span style="font-size: 0.72rem; color: var(--google-blue); font-weight:700;">${c.type}</span></td>
+          <td>
+            <button class="btn-quick-add" style="padding: 4px 10px; font-size: 0.75rem;" onclick="loadCustomerFromModal(${c.id})">✓ Seleccionar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadCustomerFromModal(id) {
+      const cust = CUSTOMER_DATABASE.find(x => x.id === id);
+      if (cust) {
+        loadCustomerIntoPanel(cust);
+        closeModal('modal-customer');
+      }
+    }
+
+    // MODAL CATÁLOGO DE PRODUCTOS (F11)
+    function openCatalogModal() {
+      document.getElementById('modal-catalog').classList.add('active');
+    }
+
+    function filterCatalog() {
+      const q = document.getElementById('catalog-search').value.toLowerCase();
+      renderCatalog(q);
+    }
+
+    function renderCatalog(filter = '') {
+      const tbody = document.getElementById('catalog-table-body');
+      tbody.innerHTML = '';
+
+      const filtered = PRODUCT_DATABASE.filter(p => p.name.toLowerCase().includes(filter) || p.code.toLowerCase().includes(filter));
+
+      filtered.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="code-col">${p.code}</td>
+          <td>${p.name}</td>
+          <td><span style="color: var(--google-green); font-weight:700;">${p.stock}</span></td>
+          <td class="price-col" style="text-align: right;">$${p.price.toFixed(2)}</td>
+          <td>
+            <button class="btn-quick-add" style="padding: 4px 10px; font-size: 0.75rem;" onclick="addToCartFromModal(${p.id})">＋ Añadir</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addToCartFromModal(id) {
+      const p = PRODUCT_DATABASE.find(x => x.id === id);
+      if (p) addToCart(p);
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    }
+
+    // MOSTRAR TOAST DE NOTIFICACIÓN
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+  </script>
+</body>
+</html>

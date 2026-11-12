@@ -1,0 +1,122 @@
+se desea crear una bd para un sistema de inventario y punto de ventas con las siguientes tablas;
+
+1 productos
+   id
+   nombre
+   precio_venta
+   precio_compra
+   imagen
+   id_categoria
+   id_medida
+   estado
+
+2 categorias
+   id
+   nombre
+   estado
+
+3 medidas
+   id
+   nombre
+   abreviatura
+   estado
+
+4 stock
+   id
+   id_producto
+   id_almacen
+   cantidad
+
+5 almacen
+   id
+   nombre
+   ubicacion
+   estado
+
+6 movimientos_productos
+   id
+   id_producto
+   fecha_hora
+   tipo_movimiento
+   cantidad
+
+7 detalle_compra
+   id
+   id_producto
+   id_compra
+   cantidad
+   precio_unitario
+   total
+
+8 compra
+   id
+   id_proveedor
+   fecha_compra
+   total
+   n_factura
+
+9 proveedor
+   id
+   nombre
+   numero_documento
+   telefono
+   correo
+   direccion
+
+10 detalle_venta
+   id
+   id_producto
+   id_venta
+   cantidad
+   precio_unitario
+
+11 venta
+   id
+   id_cliente
+   fecha_venta
+   n_factura
+   monto_subtotal
+   monto_descuento
+   monto_iva
+   tasa_iva
+   total
+   id_metodo_pago
+   estado
+   id_user
+   id_caja
+   observaciones
+
+12 cliente
+   id
+   nombre
+   apellido
+   numero_documento
+   telefono
+   correo
+   direccion
+
+13 caja
+   id
+   nombre
+   estado
+
+14 metodo_pago
+   id
+   nombre
+
+15 detalle_pago
+   id
+   id_metodo_pago
+   monto
+   fecha_hora
+
+16 usuarios
+   id
+   nombre
+   apellido
+   numero_documento
+   telefono
+   correo
+   direccion
+   password
+   estado

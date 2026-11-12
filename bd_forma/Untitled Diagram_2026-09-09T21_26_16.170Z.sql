@@ -1,0 +1,214 @@
+CREATE TABLE IF NOT EXISTS `categorias` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(100) NOT NULL,
+	`estado` ENUM("ACTIVO", "INACTIVO") DEFAULT 'ACTIVO',
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `medidas` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(50) NOT NULL,
+	`abreviatura` VARCHAR(10) NOT NULL,
+	`estado` ENUM("ACTIVO", "INACTIVO") DEFAULT 'ACTIVO',
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `almacen` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(100) NOT NULL,
+	`ubicacion` VARCHAR(255) DEFAULT NULL,
+	`estado` ENUM("ACTIVO", "INACTIVO") DEFAULT 'ACTIVO',
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `proveedor` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(150) NOT NULL,
+	`numero_documento` VARCHAR(20) DEFAULT NULL,
+	`telefono` VARCHAR(20) DEFAULT NULL,
+	`correo` VARCHAR(100) DEFAULT NULL,
+	`direccion` VARCHAR(255) DEFAULT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `cliente` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(100) NOT NULL,
+	`apellido` VARCHAR(100) DEFAULT NULL,
+	`numero_documento` VARCHAR(20) DEFAULT NULL,
+	`telefono` VARCHAR(20) DEFAULT NULL,
+	`correo` VARCHAR(100) DEFAULT NULL,
+	`direccion` VARCHAR(255) DEFAULT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `metodo_pago` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(50) NOT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `usuarios` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(100) NOT NULL,
+	`apellido` VARCHAR(100) DEFAULT NULL,
+	`numero_documento` VARCHAR(20) DEFAULT NULL,
+	`telefono` VARCHAR(20) DEFAULT NULL,
+	`correo` VARCHAR(100) DEFAULT NULL,
+	`direccion` VARCHAR(255) DEFAULT NULL,
+	`password` VARCHAR(255) NOT NULL,
+	`estado` ENUM("ACTIVO", "INACTIVO") DEFAULT 'ACTIVO',
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `caja` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(100) NOT NULL,
+	`estado` ENUM("ABIERTA", "CERRADA", "INACTIVA") DEFAULT 'CERRADA',
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `productos` (
+	`id` INT AUTO_INCREMENT,
+	`nombre` VARCHAR(150) NOT NULL,
+	`precio_venta` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`precio_compra` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`imagen` VARCHAR(255) DEFAULT NULL,
+	`id_categoria` INT DEFAULT NULL,
+	`id_medida` INT DEFAULT NULL,
+	`estado` ENUM("ACTIVO", "INACTIVO") DEFAULT 'ACTIVO',
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `stock` (
+	`id` INT AUTO_INCREMENT,
+	`id_producto` INT NOT NULL,
+	`id_almacen` INT NOT NULL,
+	`cantidad` INT NOT NULL DEFAULT 0,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `movimientos_productos` (
+	`id` INT AUTO_INCREMENT,
+	`id_producto` INT NOT NULL,
+	`fecha_hora` DATETIME DEFAULT CURRENT_TIMESTAMP,
+	`tipo_movimiento` ENUM("INGRESO", "EGRESO", "AJUSTE") NOT NULL,
+	`cantidad` INT NOT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `compra` (
+	`id` INT AUTO_INCREMENT,
+	`id_proveedor` INT NOT NULL,
+	`fecha_compra` DATETIME DEFAULT CURRENT_TIMESTAMP,
+	`total` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`n_factura` VARCHAR(50) DEFAULT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `detalle_compra` (
+	`id` INT AUTO_INCREMENT,
+	`id_producto` INT NOT NULL,
+	`id_compra` INT NOT NULL,
+	`cantidad` INT NOT NULL,
+	`precio_unitario` DECIMAL(12,2) NOT NULL,
+	`total` DECIMAL(12,2) NOT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `venta` (
+	`id` INT AUTO_INCREMENT,
+	`id_cliente` INT DEFAULT NULL,
+	`fecha_venta` DATETIME DEFAULT CURRENT_TIMESTAMP,
+	`n_factura` VARCHAR(50) DEFAULT NULL,
+	`monto_subtotal` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`monto_descuento` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`monto_iva` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`tasa_iva` DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+	`total` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	`id_metodo_pago` INT DEFAULT NULL,
+	`estado` ENUM("COMPLETADA", "PENDIENTE", "CANCELADA") DEFAULT 'COMPLETADA',
+	`id_user` INT NOT NULL,
+	`id_caja` INT NOT NULL,
+	`observaciones` TEXT DEFAULT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `detalle_venta` (
+	`id` INT AUTO_INCREMENT,
+	`id_producto` INT NOT NULL,
+	`id_venta` INT NOT NULL,
+	`cantidad` INT NOT NULL,
+	`precio_unitario` DECIMAL(12,2) NOT NULL,
+	PRIMARY KEY(`id`)
+);
+
+
+CREATE TABLE IF NOT EXISTS `detalle_pago` (
+	`id` INT AUTO_INCREMENT,
+	`id_metodo_pago` INT NOT NULL,
+	`monto` DECIMAL(12,2) NOT NULL,
+	`fecha_hora` DATETIME DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY(`id`)
+);
+
+
+ALTER TABLE `productos`
+ADD FOREIGN KEY(`id_categoria`) REFERENCES `categorias`(`id`)
+ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE `productos`
+ADD FOREIGN KEY(`id_medida`) REFERENCES `medidas`(`id`)
+ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE `stock`
+ADD FOREIGN KEY(`id_producto`) REFERENCES `productos`(`id`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `stock`
+ADD FOREIGN KEY(`id_almacen`) REFERENCES `almacen`(`id`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `movimientos_productos`
+ADD FOREIGN KEY(`id_producto`) REFERENCES `productos`(`id`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `compra`
+ADD FOREIGN KEY(`id_proveedor`) REFERENCES `proveedor`(`id`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `detalle_compra`
+ADD FOREIGN KEY(`id_producto`) REFERENCES `productos`(`id`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `detalle_compra`
+ADD FOREIGN KEY(`id_compra`) REFERENCES `compra`(`id`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `venta`
+ADD FOREIGN KEY(`id_cliente`) REFERENCES `cliente`(`id`)
+ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE `venta`
+ADD FOREIGN KEY(`id_metodo_pago`) REFERENCES `metodo_pago`(`id`)
+ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE `venta`
+ADD FOREIGN KEY(`id_user`) REFERENCES `usuarios`(`id`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `venta`
+ADD FOREIGN KEY(`id_caja`) REFERENCES `caja`(`id`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `detalle_venta`
+ADD FOREIGN KEY(`id_producto`) REFERENCES `productos`(`id`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE `detalle_venta`
+ADD FOREIGN KEY(`id_venta`) REFERENCES `venta`(`id`)
+ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE `detalle_pago`
+ADD FOREIGN KEY(`id_metodo_pago`) REFERENCES `metodo_pago`(`id`)
+ON UPDATE CASCADE ON DELETE RESTRICT;
