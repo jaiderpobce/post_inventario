@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import SubmoduleIcon from '../components/common/SubmoduleIcon';
 
 export default function SystemView() {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('usuarios');
+  const { user, getSubmodules } = useAuth();
+  const dbSubmodules = getSubmodules('/sistema');
 
-  // Submódulos del sistema
-  const systemSubmodules = [
-    { id: 'usuarios', label: 'Usuarios y Cuentas', icon: '👥', desc: 'Gestión de operadores y cajeros' },
-    { id: 'roles', label: 'Roles y Permisos (RBAC)', icon: '🛡️', desc: 'Configuración de matriz RBAC' },
-    { id: 'cajas', label: 'Terminales y Cajas', icon: '🖥️', desc: 'Puntos de venta físicos y turnos' },
-    { id: 'hardware', label: 'Impresoras y Dispositivos', icon: '🖨️', desc: 'Ticketeras fiscales y balanzas' },
-    { id: 'auditoria', label: 'Logs de Auditoría', icon: '📋', desc: 'Historial de acciones y seguridad' },
-    { id: 'general', label: 'Parámetros del Sistema', icon: '⚙️', desc: 'Moneda, IVA y datos de empresa' }
-  ];
+  // Submódulos dinámicos leídos de pos_rbac.vistas (con fallback)
+  const systemSubmodules = dbSubmodules.length > 0
+    ? dbSubmodules.map(s => ({
+        id: s.ruta.split('/').pop().replace('-logs', ''), // normaliza 'usuarios', 'roles', 'auditoria'
+        label: s.nombre,
+        icono: s.icono,
+        desc: s.descripcion
+      }))
+    : [
+        { id: 'usuarios', label: 'Usuarios y Cuentas', icono: 'manage_accounts', desc: 'Gestión de operadores y cajeros' },
+        { id: 'roles', label: 'Roles y Permisos (RBAC)', icono: 'security', desc: 'Configuración de matriz RBAC' },
+        { id: 'cajas', label: 'Terminales y Cajas', icono: 'point_of_sale', desc: 'Puntos de venta físicos y turnos' },
+        { id: 'hardware', label: 'Impresoras y Dispositivos', icono: 'print', desc: 'Ticketeras fiscales y balanzas' },
+        { id: 'auditoria', label: 'Logs de Auditoría', icono: 'history', desc: 'Historial de acciones y seguridad' },
+        { id: 'general', label: 'Parámetros del Sistema', icono: 'tune', desc: 'Moneda, IVA y datos de empresa' }
+      ];
+
+  const [activeTab, setActiveTab] = useState('usuarios');
 
   return (
     <div style={{
@@ -80,7 +90,9 @@ export default function SystemView() {
                   transition: 'var(--transition)'
                 }}
               >
-                <span style={{ fontSize: '1.25rem' }}>{sub.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px' }}>
+                  <SubmoduleIcon name={sub.icono} size={19} />
+                </span>
                 <div style={{ flex: 1 }}>
                   <div>{sub.label}</div>
                   <div style={{ fontSize: '0.7rem', color: isActive ? 'var(--google-blue-dark)' : 'var(--text-dim)', fontWeight: 400 }}>

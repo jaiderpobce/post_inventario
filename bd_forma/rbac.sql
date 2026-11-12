@@ -71,14 +71,17 @@ CREATE TABLE `modulo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
--- 4. PANTALLAS / VISTAS
+-- 4. PANTALLAS / VISTAS (SUBMÓDULOS DEL SISTEMA)
 -- --------------------------------------------------------
 CREATE TABLE `vistas` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `id_modulo` INT(11) DEFAULT NULL,
   `nombre_vista` VARCHAR(80) NOT NULL,
+  `icono` VARCHAR(50) DEFAULT 'dashboard',
   `ruta_acceso` VARCHAR(120) NOT NULL,
   `descripcion` VARCHAR(255) DEFAULT NULL,
+  `orden` INT(11) DEFAULT 1,
+  `activo` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_vistas_ruta` (`ruta_acceso`),
   KEY `fk_vistas_modulo_idx` (`id_modulo`),
@@ -178,12 +181,33 @@ INSERT INTO `modulo` (`id`, `nombre_modulo`, `descripcion`, `icono`, `orden`) VA
 (3, 'Reportes y Auditoría', 'Cierre de caja, ventas diarias y logs de auditoría', 'bar_chart', 3),
 (4, 'Configuración y Seguridad', 'Usuarios, roles, terminales e impresoras', 'settings', 4);
 
--- 3. Vistas asociadas a los Módulos
-INSERT INTO `vistas` (`id`, `id_modulo`, `nombre_vista`, `ruta_acceso`, `descripcion`) VALUES
-(1, 1, 'Terminal POS', '/pos', 'Pantalla principal de venta'),
-(2, 2, 'Panel de Administración', '/administracion', 'Dashboard administrativo: productos, clientes, compras e inventario'),
-(3, 3, 'Auditoría y Cierres', '/reportes', 'Reportes de ventas y corte X/Z'),
-(4, 4, 'Ajustes del Sistema', '/sistema', 'Configuración de terminal y red');
+-- 3. Vistas asociadas a los Módulos (Submódulos)
+INSERT INTO `vistas` (`id`, `id_modulo`, `nombre_vista`, `icono`, `ruta_acceso`, `descripcion`, `orden`, `activo`) VALUES
+-- MÓDULO 1: PUNTO DE VENTA (POS)
+(1, 1, 'Terminal POS', 'point_of_sale', '/pos', 'Pantalla principal de venta y cobro', 1, 1),
+
+-- MÓDULO 2: ADMINISTRACIÓN
+(2, 2, 'Panel de Administración', 'admin_panel_settings', '/administracion', 'Dashboard principal administrativo', 0, 1),
+(20, 2, 'Productos y Catálogo', 'inventory_2', '/administracion/productos', 'Gestión de precios, costos y códigos de barras', 1, 1),
+(21, 2, 'Clientes y Cuentas', 'people', '/administracion/clientes', 'Directorio de clientes, RIF/cédula y crédito', 2, 1),
+(22, 2, 'Compras a Proveedores', 'shopping_cart', '/administracion/compras', 'Recepción de mercancía y facturas de compra', 3, 1),
+(23, 2, 'Inventario y Almacén', 'warehouse', '/administracion/inventario', 'Existencias por almacén, ajustes y kardex', 4, 1),
+(24, 2, 'Categorías y Medidas', 'category', '/administracion/categorias', 'Departamentos de productos y unidades de medida', 5, 1),
+
+-- MÓDULO 3: REPORTES Y AUDITORÍA
+(3, 3, 'Auditoría y Cierres', 'bar_chart', '/reportes', 'Dashboard general de reportes', 0, 1),
+(30, 3, 'Cierre de Caja (Corte X/Z)', 'receipt_long', '/reportes/cierre', 'Arqueo de caja y comprobantes fiscales', 1, 1),
+(31, 3, 'Ventas y Facturación', 'bar_chart', '/reportes/ventas', 'Estadísticas de ventas diarias, semanales y mensuales', 2, 1),
+(32, 3, 'Auditoría y Trazabilidad', 'analytics', '/reportes/auditoria', 'Historial de modificaciones y seguridad', 3, 1),
+
+-- MÓDULO 4: CONFIGURACIÓN Y SEGURIDAD (SISTEMA)
+(4, 4, 'Ajustes del Sistema', 'settings', '/sistema', 'Dashboard general de configuración', 0, 1),
+(40, 4, 'Usuarios y Cuentas', 'manage_accounts', '/sistema/usuarios', 'Operadores, cajeros y credenciales de acceso', 1, 1),
+(41, 4, 'Roles y Permisos (RBAC)', 'security', '/sistema/roles', 'Matriz de control de acceso y privilegios', 2, 1),
+(42, 4, 'Terminales y Cajas', 'point_of_sale', '/sistema/cajas', 'Puntos de venta físicos y turnos de caja', 3, 1),
+(43, 4, 'Impresoras y Hardware', 'print', '/sistema/hardware', 'Ticketeras fiscales, impresoras y balanzas', 4, 1),
+(44, 4, 'Logs de Auditoría', 'history', '/sistema/auditoria-logs', 'Registro de eventos de seguridad del sistema', 5, 1),
+(45, 4, 'Parámetros Generales', 'tune', '/sistema/general', 'Moneda base, tasa de IVA y datos fiscales de empresa', 6, 1);
 
 -- 4. Catálogo de Permisos Granulares
 INSERT INTO `permisos` (`id`, `nombre_permiso`, `descripcion`) VALUES

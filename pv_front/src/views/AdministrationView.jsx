@@ -1,27 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { ProductModel } from '../models/ProductModel';
 import { INITIAL_CUSTOMERS } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
+import SubmoduleIcon from '../components/common/SubmoduleIcon';
 
 export default function AdministrationView() {
+  const { getSubmodules } = useAuth();
+  const dbSubmodules = getSubmodules('/administracion');
+
+  // Submódulos dinámicos leídos de pos_rbac.vistas (con fallback)
+  const adminSubmodules = dbSubmodules.length > 0
+    ? dbSubmodules.map(s => ({
+        id: s.ruta.split('/').pop(),
+        label: s.nombre,
+        icono: s.icono,
+        desc: s.descripcion
+      }))
+    : [
+        { id: 'productos', label: 'Productos y Catálogo', icono: 'inventory_2', desc: 'Precios, códigos de barra y fichas' },
+        { id: 'clientes', label: 'Clientes y Cuentas', icono: 'people', desc: 'Directorio fiscal y límites de crédito' },
+        { id: 'compras', label: 'Compras y Proveedores', icono: 'shopping_cart', desc: 'Recepción de mercancía y facturas' },
+        { id: 'inventario', label: 'Inventario y Almacén', icono: 'warehouse', desc: 'Existencias por almacén y kardex' },
+        { id: 'categorias', label: 'Categorías y Medidas', icono: 'category', desc: 'Departamentos y unidades de medida' }
+      ];
+
   const [activeTab, setActiveTab] = useState('productos');
-
-  // Estado para Productos
-  const [products, setProducts] = useState([]);
-  const [productsLoading, setProductsLoading] = useState(true);
-  const [productSearch, setProductSearch] = useState('');
-
-  // Estado para Clientes
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
-  const [customerSearch, setCustomerSearch] = useState('');
-
-  // Submódulos Administrativos
-  const adminSubmodules = [
-    { id: 'productos', label: 'Productos y Catálogo', icon: '📦', desc: 'Precios, códigos de barra y fichas' },
-    { id: 'clientes', label: 'Clientes y Cuentas', icon: '👥', desc: 'Directorio fiscal y límites de crédito' },
-    { id: 'compras', label: 'Compras y Proveedores', icon: '🛒', desc: 'Recepción de mercancía y facturas' },
-    { id: 'inventario', label: 'Inventario y Almacén', icon: '🏢', desc: 'Existencias por almacén y kardex' },
-    { id: 'categorias', label: 'Categorías y Medidas', icon: '🏷️', desc: 'Departamentos y unidades de medida' }
-  ];
 
   // Carga inicial de productos desde la base de datos
   useEffect(() => {
@@ -113,7 +116,9 @@ export default function AdministrationView() {
                   transition: 'var(--transition)'
                 }}
               >
-                <span style={{ fontSize: '1.25rem' }}>{sub.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px' }}>
+                  <SubmoduleIcon name={sub.icono} size={19} />
+                </span>
                 <div style={{ flex: 1 }}>
                   <div>{sub.label}</div>
                   <div style={{ fontSize: '0.7rem', color: isActive ? 'var(--google-blue-dark)' : 'var(--text-dim)', fontWeight: 400 }}>

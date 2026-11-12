@@ -2,16 +2,67 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 const AuthContext = createContext(null);
 
-// Módulos por defecto según roles (para fallback o testing sin backend)
+// Módulos y submódulos (vistas) por defecto según roles (para fallback o testing sin backend)
 const DEFAULT_SUPERADMIN_MODULES = [
-  { id: 1, nombre: 'Operaciones POS', ruta: '/pos', icono: 'point_of_sale' },
-  { id: 2, nombre: 'Administración', ruta: '/administracion', icono: 'admin_panel_settings' },
-  { id: 3, nombre: 'Reportes', ruta: '/reportes', icono: 'bar_chart' },
-  { id: 4, nombre: 'Sistema', ruta: '/sistema', icono: 'settings' }
+  { 
+    id: 1, 
+    nombre: 'Operaciones POS', 
+    ruta: '/pos', 
+    icono: 'point_of_sale',
+    submodulos: [
+      { id: 1, id_modulo: 1, nombre: 'Terminal POS', icono: 'point_of_sale', ruta: '/pos', orden: 1, descripcion: 'Pantalla principal de venta y cobro' }
+    ]
+  },
+  { 
+    id: 2, 
+    nombre: 'Administración', 
+    ruta: '/administracion', 
+    icono: 'admin_panel_settings',
+    submodulos: [
+      { id: 20, id_modulo: 2, nombre: 'Productos y Catálogo', icono: 'inventory_2', ruta: '/administracion/productos', orden: 1, descripcion: 'Gestión de precios, costos y códigos de barras' },
+      { id: 21, id_modulo: 2, nombre: 'Clientes y Cuentas', icono: 'people', ruta: '/administracion/clientes', orden: 2, descripcion: 'Directorio de clientes, RIF/cédula y crédito' },
+      { id: 22, id_modulo: 2, nombre: 'Compras a Proveedores', icono: 'shopping_cart', ruta: '/administracion/compras', orden: 3, descripcion: 'Recepción de mercancía y facturas de compra' },
+      { id: 23, id_modulo: 2, nombre: 'Inventario y Almacén', icono: 'warehouse', ruta: '/administracion/inventario', orden: 4, descripcion: 'Existencias por almacén, ajustes y kardex' },
+      { id: 24, id_modulo: 2, nombre: 'Categorías y Medidas', icono: 'category', ruta: '/administracion/categorias', orden: 5, descripcion: 'Departamentos de productos y unidades de medida' }
+    ]
+  },
+  { 
+    id: 3, 
+    nombre: 'Reportes', 
+    ruta: '/reportes', 
+    icono: 'bar_chart',
+    submodulos: [
+      { id: 30, id_modulo: 3, nombre: 'Cierre de Caja (Corte X/Z)', icono: 'receipt_long', ruta: '/reportes/cierre', orden: 1, descripcion: 'Arqueo de caja y comprobantes fiscales' },
+      { id: 31, id_modulo: 3, nombre: 'Ventas y Facturación', icono: 'bar_chart', ruta: '/reportes/ventas', orden: 2, descripcion: 'Estadísticas de ventas diarias y mensuales' },
+      { id: 32, id_modulo: 3, nombre: 'Auditoría y Trazabilidad', icono: 'analytics', ruta: '/reportes/auditoria', orden: 3, descripcion: 'Historial de modificaciones y seguridad' }
+    ]
+  },
+  { 
+    id: 4, 
+    nombre: 'Sistema', 
+    ruta: '/sistema', 
+    icono: 'settings',
+    submodulos: [
+      { id: 40, id_modulo: 4, nombre: 'Usuarios y Cuentas', icono: 'manage_accounts', ruta: '/sistema/usuarios', orden: 1, descripcion: 'Operadores, cajeros y credenciales de acceso' },
+      { id: 41, id_modulo: 4, nombre: 'Roles y Permisos (RBAC)', icono: 'security', ruta: '/sistema/roles', orden: 2, descripcion: 'Matriz de control de acceso y privilegios' },
+      { id: 42, id_modulo: 4, nombre: 'Terminales y Cajas', icono: 'point_of_sale', ruta: '/sistema/cajas', orden: 3, descripcion: 'Puntos de venta físicos y turnos de caja' },
+      { id: 43, id_modulo: 4, nombre: 'Impresoras y Hardware', icono: 'print', ruta: '/sistema/hardware', orden: 4, descripcion: 'Ticketeras fiscales, impresoras y balanzas' },
+      { id: 44, id_modulo: 4, nombre: 'Logs de Auditoría', icono: 'history', ruta: '/sistema/auditoria-logs', orden: 5, descripcion: 'Registro de eventos de seguridad del sistema' },
+      { id: 45, id_modulo: 4, nombre: 'Parámetros Generales', icono: 'tune', ruta: '/sistema/general', orden: 6, descripcion: 'Moneda base, tasa de IVA y datos fiscales' }
+    ]
+  }
 ];
 
 const DEFAULT_CAJERO_MODULES = [
-  { id: 1, nombre: 'Operaciones POS', ruta: '/pos', icono: 'point_of_sale' }
+  { 
+    id: 1, 
+    nombre: 'Operaciones POS', 
+    ruta: '/pos', 
+    icono: 'point_of_sale',
+    submodulos: [
+      { id: 1, id_modulo: 1, nombre: 'Terminal POS', icono: 'point_of_sale', ruta: '/pos', orden: 1, descripcion: 'Pantalla principal de venta y cobro' }
+    ]
+  }
 ];
 
 export function AuthProvider({ children }) {
@@ -167,6 +218,16 @@ export function AuthProvider({ children }) {
     return modules.some(m => m.ruta === routePath);
   };
 
+  // Helper para obtener los submódulos de un módulo específico (cargados dinámicamente desde pos_rbac.vistas)
+  const getSubmodules = useCallback((moduleRouteOrId) => {
+    const mod = modules.find(m => 
+      m.id === moduleRouteOrId || 
+      m.ruta === moduleRouteOrId ||
+      String(m.nombre).toLowerCase().includes(String(moduleRouteOrId).replace('/', '').toLowerCase())
+    );
+    return mod?.submodulos || [];
+  }, [modules]);
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -179,7 +240,8 @@ export function AuthProvider({ children }) {
       logout,
       switchRole,
       hasPermission,
-      canAccessRoute
+      canAccessRoute,
+      getSubmodules
     }}>
       {children}
     </AuthContext.Provider>
