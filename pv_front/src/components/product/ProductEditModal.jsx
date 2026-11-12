@@ -44,7 +44,8 @@ export default function ProductEditModal({ isOpen, onClose, product, onSave }) {
       });
 
       if (!res.ok) {
-        throw new Error(`Error HTTP ${res.status}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error del servidor HTTP ${res.status}`);
       }
 
       onSave({
@@ -57,14 +58,7 @@ export default function ProductEditModal({ isOpen, onClose, product, onSave }) {
       onClose();
     } catch (err) {
       console.error('Error modificando producto:', err);
-      // Fallback local en caso de desconexión
-      onSave({
-        ...product,
-        name: name.trim(),
-        price: numPrice,
-        barcode: barcode.trim()
-      });
-      onClose();
+      setError(err.message || 'No se pudo guardar la modificación en la base de datos');
     } finally {
       setSaving(false);
     }
