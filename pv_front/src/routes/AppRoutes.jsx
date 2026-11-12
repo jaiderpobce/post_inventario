@@ -35,6 +35,7 @@ export default function AppRoutes() {
 
       {/* MÓDULO: ADMINISTRACIÓN (DASHBOARD CON SUBMÓDULOS) */}
       <Route path="/administracion" element={<ProtectedRoute route="/administracion"><AdministrationView /></ProtectedRoute>} />
+      <Route path="/administracion/*" element={<ProtectedRoute route="/administracion"><AdministrationView /></ProtectedRoute>} />
       <Route path="/admin" element={<Navigate to="/administracion" replace />} />
 
       {/* VISTAS ESPECÍFICAS / DIRECTAS */}
@@ -43,10 +44,12 @@ export default function AppRoutes() {
 
       {/* MÓDULO: REPORTES Y AUDITORÍA */}
       <Route path="/reportes" element={<ProtectedRoute route="/reportes"><ReportsView /></ProtectedRoute>} />
+      <Route path="/reportes/*" element={<ProtectedRoute route="/reportes"><ReportsView /></ProtectedRoute>} />
       <Route path="/reports" element={<Navigate to="/reportes" replace />} />
 
       {/* MÓDULO: CONFIGURACIÓN Y SEGURIDAD */}
       <Route path="/sistema" element={<ProtectedRoute route="/sistema"><SystemView /></ProtectedRoute>} />
+      <Route path="/sistema/*" element={<ProtectedRoute route="/sistema"><SystemView /></ProtectedRoute>} />
       <Route path="/system" element={<Navigate to="/sistema" replace />} />
 
       {/* RUTA POR DEFECTO */}

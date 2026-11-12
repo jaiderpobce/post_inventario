@@ -24,6 +24,15 @@ export default function AdministrationView() {
         { id: 'categorias', label: 'Categorías y Medidas', icono: 'category', desc: 'Departamentos y unidades de medida' }
       ];
 
+  // Estado para Productos
+  const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productSearch, setProductSearch] = useState('');
+
+  // Estado para Clientes
+  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
+  const [customerSearch, setCustomerSearch] = useState('');
+
   const [activeTab, setActiveTab] = useState('productos');
 
   // Carga inicial de productos desde la base de datos
@@ -205,7 +214,14 @@ export default function AdministrationView() {
                 </thead>
                 <tbody>
                   {productsLoading && (
-                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>Cargando catálogo...</td></tr>
+                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '24px' }}>Cargando catálogo de la base de datos...</td></tr>
+                  )}
+                  {!productsLoading && filteredProducts.length === 0 && (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                        No se encontraron productos registrados en el inventario.
+                      </td>
+                    </tr>
                   )}
                   {!productsLoading && filteredProducts.map(p => (
                     <tr key={p.id}>
