@@ -228,7 +228,7 @@ CREATE TABLE `productos` (
   `id_proveedor` int(11) DEFAULT NULL,
   `registro_sanitario` varchar(100) DEFAULT NULL,
   `es_pesable_balanza` tinyint(1) NOT NULL DEFAULT 0,
-  `estado` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO'
+  `estado` enum('ACTIVO','SUSPENDIDO','INACTIVO') DEFAULT 'ACTIVO'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
