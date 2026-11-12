@@ -5,10 +5,9 @@ const AuthContext = createContext(null);
 // Módulos por defecto según roles (para fallback o testing sin backend)
 const DEFAULT_SUPERADMIN_MODULES = [
   { id: 1, nombre: 'Operaciones POS', ruta: '/pos', icono: 'point_of_sale' },
-  { id: 2, nombre: 'Catálogo', ruta: '/productos', icono: 'inventory_2' },
+  { id: 2, nombre: 'Administración', ruta: '/administracion', icono: 'admin_panel_settings' },
   { id: 3, nombre: 'Reportes', ruta: '/reportes', icono: 'bar_chart' },
-  { id: 4, nombre: 'Sistema', ruta: '/sistema', icono: 'settings' },
-  { id: 5, nombre: 'Clientes', ruta: '/clientes', icono: 'people' }
+  { id: 4, nombre: 'Sistema', ruta: '/sistema', icono: 'settings' }
 ];
 
 const DEFAULT_CAJERO_MODULES = [

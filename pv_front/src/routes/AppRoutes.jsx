@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LoginView from '../views/LoginView';
 import PosView from '../views/PosView';
+import AdministrationView from '../views/AdministrationView';
 import ProductsView from '../views/ProductsView';
 import ReportsView from '../views/ReportsView';
 import SystemView from '../views/SystemView';
@@ -32,19 +33,21 @@ export default function AppRoutes() {
       <Route path="/" element={<Navigate to={isAuthenticated ? "/pos" : "/login"} replace />} />
       <Route path="/pos" element={<ProtectedRoute route="/pos"><PosView /></ProtectedRoute>} />
 
-      {/* MÓDULO 2: INVENTARIO Y CATÁLOGO */}
-      <Route path="/productos" element={<ProtectedRoute route="/productos"><ProductsView /></ProtectedRoute>} />
+      {/* MÓDULO: ADMINISTRACIÓN (DASHBOARD CON SUBMÓDULOS) */}
+      <Route path="/administracion" element={<ProtectedRoute route="/administracion"><AdministrationView /></ProtectedRoute>} />
+      <Route path="/admin" element={<Navigate to="/administracion" replace />} />
 
-      {/* MÓDULO 3: REPORTES Y AUDITORÍA */}
+      {/* VISTAS ESPECÍFICAS / DIRECTAS */}
+      <Route path="/productos" element={<ProtectedRoute route="/productos"><ProductsView /></ProtectedRoute>} />
+      <Route path="/clientes" element={<ProtectedRoute route="/clientes"><ClientesView /></ProtectedRoute>} />
+
+      {/* MÓDULO: REPORTES Y AUDITORÍA */}
       <Route path="/reportes" element={<ProtectedRoute route="/reportes"><ReportsView /></ProtectedRoute>} />
       <Route path="/reports" element={<Navigate to="/reportes" replace />} />
 
-      {/* MÓDULO 4: CONFIGURACIÓN Y SEGURIDAD */}
+      {/* MÓDULO: CONFIGURACIÓN Y SEGURIDAD */}
       <Route path="/sistema" element={<ProtectedRoute route="/sistema"><SystemView /></ProtectedRoute>} />
       <Route path="/system" element={<Navigate to="/sistema" replace />} />
-
-      {/* MÓDULO: CLIENTES */}
-      <Route path="/clientes" element={<ProtectedRoute route="/clientes"><ClientesView /></ProtectedRoute>} />
 
       {/* RUTA POR DEFECTO */}
       <Route path="*" element={<Navigate to={isAuthenticated ? "/pos" : "/login"} replace />} />

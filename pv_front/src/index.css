@@ -113,25 +113,50 @@ body {
 
 .top-menu {
   display: flex;
+  align-items: center;
   gap: 6px;
+  background: rgba(241, 243, 244, 0.7);
+  padding: 4px 6px;
+  border-radius: 24px;
+  border: 1px solid var(--panel-border);
 }
 
 .menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-muted);
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  padding: 7px 16px;
+  border-radius: 18px;
+  font-size: 0.86rem;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.menu-btn:hover, .menu-btn.active {
-  background: rgba(26, 115, 232, 0.1);
+.menu-btn svg {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.menu-btn:hover {
+  background: rgba(26, 115, 232, 0.08);
+  color: var(--google-blue);
+}
+
+.menu-btn:hover svg {
+  transform: translateY(-1px);
+}
+
+.menu-btn.active {
+  background: #ffffff;
   color: var(--google-blue);
   border-color: rgba(26, 115, 232, 0.25);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.15);
+  font-weight: 700;
 }
 
 .top-shortcuts {

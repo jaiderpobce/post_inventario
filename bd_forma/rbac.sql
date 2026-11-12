@@ -174,14 +174,14 @@ INSERT INTO `rol` (`id`, `nombre_rol`, `descripcion`) VALUES
 -- 2. Módulos del Sistema
 INSERT INTO `modulo` (`id`, `nombre_modulo`, `descripcion`, `icono`, `orden`) VALUES
 (1, 'Punto de Venta (POS)', 'Facturación, cobro y atención en caja', 'point_of_sale', 1),
-(2, 'Inventario y Catálogo', 'Gestión de productos, categorías, stock y almacenes', 'inventory_2', 2),
+(2, 'Administración', 'Gestión comercial: productos, clientes, compras e inventario', 'admin_panel_settings', 2),
 (3, 'Reportes y Auditoría', 'Cierre de caja, ventas diarias y logs de auditoría', 'bar_chart', 3),
 (4, 'Configuración y Seguridad', 'Usuarios, roles, terminales e impresoras', 'settings', 4);
 
 -- 3. Vistas asociadas a los Módulos
 INSERT INTO `vistas` (`id`, `id_modulo`, `nombre_vista`, `ruta_acceso`, `descripcion`) VALUES
 (1, 1, 'Terminal POS', '/pos', 'Pantalla principal de venta'),
-(2, 2, 'Catálogo de Productos', '/productos', 'Listado y búsqueda de productos'),
+(2, 2, 'Panel de Administración', '/administracion', 'Dashboard administrativo: productos, clientes, compras e inventario'),
 (3, 3, 'Auditoría y Cierres', '/reportes', 'Reportes de ventas y corte X/Z'),
 (4, 4, 'Ajustes del Sistema', '/sistema', 'Configuración de terminal y red');
 
