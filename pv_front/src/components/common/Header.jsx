@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Header({ onTriggerFKey, onClearSale, onShowToast }) {
   const [timeStr, setTimeStr] = useState('--:--:--');
+  const { user, modules, switchRole, logout } = useAuth();
 
   useEffect(() => {
     const updateClock = () => {
@@ -14,6 +16,8 @@ export default function Header({ onTriggerFKey, onClearSale, onShowToast }) {
     return () => clearInterval(interval);
   }, []);
 
+  const initials = `${user?.nombre?.[0] || 'U'}${user?.apellido?.[0] || ''}`.toUpperCase();
+
   return (
     <header className="topbar">
       <div className="brand">
@@ -23,25 +27,18 @@ export default function Header({ onTriggerFKey, onClearSale, onShowToast }) {
         </div>
       </div>
 
+      {/* MENÚ DINÁMICO CARGADO DESDE LA TABLA modulo / r_modulo_rol SEGÚN EL ROL */}
       <nav className="top-menu">
-        <NavLink 
-          to="/" 
-          className={({ isActive }) => `menu-btn ${isActive ? 'active' : ''}`}
-        >
-          Operaciones
-        </NavLink>
-        <NavLink 
-          to="/reports" 
-          className={({ isActive }) => `menu-btn ${isActive ? 'active' : ''}`}
-        >
-          Reportes
-        </NavLink>
-        <NavLink 
-          to="/system" 
-          className={({ isActive }) => `menu-btn ${isActive ? 'active' : ''}`}
-        >
-          Sistema
-        </NavLink>
+        {modules.map((mod) => (
+          <NavLink 
+            key={mod.id || mod.ruta}
+            to={mod.ruta} 
+            className={({ isActive }) => `menu-btn ${isActive ? 'active' : ''}`}
+            title={mod.descripcion || mod.nombre}
+          >
+            {mod.nombre}
+          </NavLink>
+        ))}
       </nav>
 
       <div className="top-shortcuts">
@@ -62,12 +59,48 @@ export default function Header({ onTriggerFKey, onClearSale, onShowToast }) {
         </div>
       </div>
 
-      <div className="user-info">
-        <div className="user-avatar">LM</div>
-        <div>
-          <div style={{ fontWeight: 700, color: '#202124' }}>Laura Morales</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{timeStr}</div>
+      {/* INFORMACIÓN DEL USUARIO LOGUEADO Y CAMBIO DE ROL PARA TESTING */}
+      <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="user-avatar" title={`Rol: ${user?.rol}`}>
+          {initials}
         </div>
+        <div>
+          <div style={{ fontWeight: 700, color: '#202124', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+            {user?.nombre} {user?.apellido || ''}
+          </div>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
+            <span style={{ 
+              fontSize: '0.65rem', 
+              fontWeight: 800, 
+              padding: '1px 6px', 
+              borderRadius: '4px',
+              background: user?.rol === 'SUPERADMIN' ? '#e8f0fe' : '#e6f4ea',
+              color: user?.rol === 'SUPERADMIN' ? 'var(--google-blue)' : 'var(--google-green)'
+            }}>
+              {user?.rol || 'USUARIO'}
+            </span>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>{timeStr}</span>
+          </div>
+        </div>
+
+        {/* BOTÓN RÁPIDO PARA CAMBIAR ENTRE SUPERADMIN Y CAJERO Y PROBAR EL MENÚ DINÁMICO */}
+        <button
+          onClick={() => switchRole(user?.rol === 'SUPERADMIN' ? 'CAJERO' : 'SUPERADMIN')}
+          style={{
+            marginLeft: '8px',
+            fontSize: '0.72rem',
+            padding: '4px 8px',
+            borderRadius: '8px',
+            border: '1px solid var(--panel-border)',
+            background: '#ffffff',
+            cursor: 'pointer',
+            color: 'var(--text-muted)',
+            fontWeight: 600
+          }}
+          title="Alternar rol para verificar la barra de menú dinámica"
+        >
+          {user?.rol === 'SUPERADMIN' ? '🔁 Probar Cajero' : '🔁 Probar Superadmin'}
+        </button>
       </div>
     </header>
   );
