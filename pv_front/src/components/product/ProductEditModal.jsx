@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNotification } from '../../context/NotificationContext';
+import apiClient from '../../services/apiClient';
 
 export default function ProductEditModal({ isOpen, onClose, product, onSave }) {
+  const { showSuccess, showError } = useNotification();
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [barcode, setBarcode] = useState('');
@@ -30,24 +33,20 @@ export default function ProductEditModal({ isOpen, onClose, product, onSave }) {
       return;
     }
 
-    try {
-      setSaving(true);
-      setError('');
-      const res = await fetch(`/api/products/${product.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          price: numPrice,
-          barcode: barcode.trim()
-        })
-      });
+    setSaving(true);
+    setError('');
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error del servidor HTTP ${res.status}`);
-      }
+    // Procesamiento centralizado mediante apiClient y el módulo de respuestas
+    const result = await apiClient.put(`/api/products/${product.id}`, {
+      name: name.trim(),
+      price: numPrice,
+      barcode: barcode.trim()
+    });
 
+    setSaving(false);
+
+    if (result.ok) {
+      showSuccess(result.message || 'Producto modificado exitosamente en la base de datos');
       onSave({
         ...product,
         name: name.trim(),
@@ -56,11 +55,9 @@ export default function ProductEditModal({ isOpen, onClose, product, onSave }) {
         code: barcode.trim() || product.code
       });
       onClose();
-    } catch (err) {
-      console.error('Error modificando producto:', err);
-      setError(err.message || 'No se pudo guardar la modificación en la base de datos');
-    } finally {
-      setSaving(false);
+    } else {
+      showError(result.message, 'Error al modificar');
+      setError(result.message);
     }
   };
 

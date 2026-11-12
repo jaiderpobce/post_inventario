@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { ProductModel } from '../models/ProductModel';
 import { INITIAL_CUSTOMERS } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import SubmoduleIcon from '../components/common/SubmoduleIcon';
 import ProductEditModal from '../components/product/ProductEditModal';
+import apiClient from '../services/apiClient';
 
 export default function AdministrationView() {
   const { getSubmodules } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const dbSubmodules = getSubmodules('/administracion');
 
   // Submódulos dinámicos leídos de pos_rbac.vistas (con fallback)
@@ -84,18 +87,16 @@ export default function AdministrationView() {
     if (!selectedProduct) return;
     const isSuspended = selectedProduct.status === 'SUSPENDIDO';
     const newStatus = isSuspended ? 'ACTIVO' : 'SUSPENDIDO';
-    try {
-      await fetch(`/api/products/${selectedProduct.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-    } catch (e) {
-      console.warn('Fallback en suspensión de producto:', e);
+
+    // Petición mediante el cliente unificado con procesamiento automático de respuestas
+    const result = await apiClient.patch(`/api/products/${selectedProduct.id}/status`, { status: newStatus });
+    if (result.ok) {
+      setProducts(prev => prev.map(p => p.id === selectedProduct.id ? { ...p, status: newStatus } : p));
+      setSelectedProduct(prev => prev ? { ...prev, status: newStatus } : null);
+      showSuccess(result.message || `Producto "${selectedProduct.name}" ${isSuspended ? 'reactivado' : 'suspendido'} exitosamente`);
+    } else {
+      showError(result.message, 'Fallo al cambiar estado');
     }
-    setProducts(prev => prev.map(p => p.id === selectedProduct.id ? { ...p, status: newStatus } : p));
-    setSelectedProduct(prev => prev ? { ...prev, status: newStatus } : null);
-    setToastMessage(`Producto "${selectedProduct.name}" ${isSuspended ? 'reactivado' : 'suspendido'} exitosamente`);
   };
 
   const handleDeleteProduct = async () => {
@@ -103,20 +104,19 @@ export default function AdministrationView() {
     const confirmed = window.confirm(`¿Seguro que desea eliminar o inactivar el producto "${selectedProduct.name}"?`);
     if (!confirmed) return;
 
-    try {
-      await fetch(`/api/products/${selectedProduct.id}`, { method: 'DELETE' });
-    } catch (e) {
-      console.warn('Fallback al eliminar producto:', e);
+    const result = await apiClient.delete(`/api/products/${selectedProduct.id}`);
+    if (result.ok) {
+      setProducts(prev => prev.filter(p => p.id !== selectedProduct.id));
+      setSelectedProduct(null);
+      showSuccess(result.message || `Producto "${selectedProduct.name}" eliminado del catálogo`);
+    } else {
+      showError(result.message, 'Fallo al eliminar');
     }
-    setProducts(prev => prev.filter(p => p.id !== selectedProduct.id));
-    setToastMessage(`Producto "${selectedProduct.name}" eliminado del catálogo`);
-    setSelectedProduct(null);
   };
 
   const handleSaveEditedProduct = (updated) => {
     setProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
     setSelectedProduct(updated);
-    setToastMessage(`Producto "${updated.name}" actualizado con éxito`);
   };
 
   const filteredCustomers = customers.filter(c => 

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ProductModel } from '../models/ProductModel';
+import { useNotification } from '../context/NotificationContext';
 import ProductEditModal from '../components/product/ProductEditModal';
+import apiClient from '../services/apiClient';
 
 export default function ProductsView() {
+  const { showSuccess, showError } = useNotification();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -11,20 +14,17 @@ export default function ProductsView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
 
   const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/products');
-      if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-      const data = await res.json();
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error al cargar productos:', err);
-      setError('No se pudo conectar con el catálogo de productos.');
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    const result = await apiClient.get('/api/products');
+    setLoading(false);
+    if (result.ok) {
+      setProducts(Array.isArray(result.data) ? result.data : []);
+      setError('');
+    } else {
+      setError(result.message);
+      showError(result.message, 'Catálogo de Productos');
     }
   };
 
@@ -37,13 +37,6 @@ export default function ProductsView() {
     setSelectedProduct(null);
   }, [searchTerm]);
 
-  useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(''), 3200);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
-
   const filtered = ProductModel.filterProducts(products, searchTerm);
   const totalItems = filtered.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -54,18 +47,15 @@ export default function ProductsView() {
     if (!selectedProduct) return;
     const isSuspended = selectedProduct.status === 'SUSPENDIDO';
     const newStatus = isSuspended ? 'ACTIVO' : 'SUSPENDIDO';
-    try {
-      await fetch(`/api/products/${selectedProduct.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-    } catch (e) {
-      console.warn('Fallback en status:', e);
+
+    const result = await apiClient.patch(`/api/products/${selectedProduct.id}/status`, { status: newStatus });
+    if (result.ok) {
+      setProducts(prev => prev.map(p => p.id === selectedProduct.id ? { ...p, status: newStatus } : p));
+      setSelectedProduct(prev => prev ? { ...prev, status: newStatus } : null);
+      showSuccess(result.message || `Producto "${selectedProduct.name}" ${isSuspended ? 'reactivado' : 'suspendido'} exitosamente`);
+    } else {
+      showError(result.message, 'Fallo al cambiar estado');
     }
-    setProducts(prev => prev.map(p => p.id === selectedProduct.id ? { ...p, status: newStatus } : p));
-    setSelectedProduct(prev => prev ? { ...prev, status: newStatus } : null);
-    setToastMessage(`Producto "${selectedProduct.name}" ${isSuspended ? 'reactivado' : 'suspendido'} exitosamente`);
   };
 
   const handleDeleteProduct = async () => {
@@ -73,20 +63,19 @@ export default function ProductsView() {
     const confirmed = window.confirm(`¿Seguro que desea eliminar el producto "${selectedProduct.name}"?`);
     if (!confirmed) return;
 
-    try {
-      await fetch(`/api/products/${selectedProduct.id}`, { method: 'DELETE' });
-    } catch (e) {
-      console.warn('Fallback al eliminar producto:', e);
+    const result = await apiClient.delete(`/api/products/${selectedProduct.id}`);
+    if (result.ok) {
+      setProducts(prev => prev.filter(p => p.id !== selectedProduct.id));
+      setSelectedProduct(null);
+      showSuccess(result.message || `Producto "${selectedProduct.name}" eliminado del catálogo`);
+    } else {
+      showError(result.message, 'Fallo al eliminar');
     }
-    setProducts(prev => prev.filter(p => p.id !== selectedProduct.id));
-    setToastMessage(`Producto "${selectedProduct.name}" eliminado`);
-    setSelectedProduct(null);
   };
 
   const handleSaveEditedProduct = (updated) => {
     setProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
     setSelectedProduct(updated);
-    setToastMessage(`Producto "${updated.name}" actualizado con éxito`);
   };
 
   return (
