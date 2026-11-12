@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProductModel } from '../models/ProductModel';
 import { useNotification } from '../context/NotificationContext';
 import ProductEditModal from '../components/product/ProductEditModal';
+import ProductCreateModal from '../components/product/ProductCreateModal';
 import apiClient from '../services/apiClient';
 
 export default function ProductsView() {
@@ -14,6 +15,7 @@ export default function ProductsView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -78,6 +80,12 @@ export default function ProductsView() {
     setSelectedProduct(updated);
   };
 
+  const handleProductCreated = (newProduct) => {
+    setProducts(prev => [newProduct, ...prev]);
+    setSelectedProduct(newProduct);
+    setCurrentPage(1);
+  };
+
   return (
     <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', flex: 1, width: '100%' }}>
       <div style={{ background: '#ffffff', border: '1px solid var(--panel-border)', borderRadius: '20px', padding: '28px', boxShadow: 'var(--shadow-main)' }}>
@@ -97,7 +105,7 @@ export default function ProductsView() {
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             <button 
               className="btn-quick-add" 
-              onClick={() => alert('Modal para registrar nuevo producto')}
+              onClick={() => setIsCreateModalOpen(true)}
             >
               ＋ Nuevo Producto
             </button>
@@ -475,6 +483,12 @@ export default function ProductsView() {
         onClose={() => setIsEditModalOpen(false)} 
         product={selectedProduct} 
         onSave={handleSaveEditedProduct} 
+      />
+
+      <ProductCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onProductCreated={handleProductCreated}
       />
     </div>
   );
