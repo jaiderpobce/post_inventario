@@ -10,6 +10,7 @@ import SystemView from '../views/SystemView';
 import ClientesView from '../views/ClientesView';
 import PurchasesView from '../views/PurchasesView';
 import InventoryView from '../views/InventoryView';
+import UsuariosView from '../views/UsuariosView';
 
 // Componente para proteger el acceso a rutas según autenticación y módulos autorizados en el RBAC
 function ProtectedRoute({ route, children }) {
@@ -45,6 +46,7 @@ export default function AppRoutes() {
       <Route path="/clientes" element={<ProtectedRoute route="/clientes"><ClientesView /></ProtectedRoute>} />
       <Route path="/compras" element={<ProtectedRoute route="/compras"><PurchasesView /></ProtectedRoute>} />
       <Route path="/inventario" element={<ProtectedRoute route="/inventario"><InventoryView /></ProtectedRoute>} />
+      <Route path="/usuarios" element={<ProtectedRoute route="/sistema"><UsuariosView /></ProtectedRoute>} />
 
       {/* MÓDULO: REPORTES Y AUDITORÍA */}
       <Route path="/reportes" element={<ProtectedRoute route="/reportes"><ReportsView /></ProtectedRoute>} />

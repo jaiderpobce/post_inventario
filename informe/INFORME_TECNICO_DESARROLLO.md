@@ -96,6 +96,15 @@ Se desarrollaron y optimizaron controladores REST dedicados en el paquete `com.p
   - `AJUSTE`: Fija la existencia real tras conteo físico directo.
   - Registra el movimiento histórico en el kardex de la empresa.
 
+### 3.5. `UserController.java` (`/api/users` & `/api/usuarios`)
+- **Gestión Integral de Operadores y Cuentas en `pos_rbac`:**
+  - `GET /api/users`: Lista operadores con documento, rol asignado, estado (`ACTIVO` / `SUSPENDIDO`) y fecha de creación.
+  - `GET /api/users/roles`: Catálogo de roles del sistema (`SUPERADMIN`, `ADMINISTRADOR`, `SUPERVISOR`, `CAJERO`).
+  - `POST /api/users`: Creación de operadores con encriptación BCrypt de contraseñas y asignación relacional de rol.
+  - `PUT /api/users/{id}`: Modificación de datos personales, correo, documento y actualización de rol o clave.
+  - `PATCH /api/users/{id}/status`: Alternancia reactiva de estado (protegiendo la cuenta de Superadmin).
+  - `DELETE /api/users/{id}`: Inactivación segura del usuario en el sistema.
+
 ---
 
 ## 4. ARQUITECTURA FRONTEND (React 18 + Vite)
@@ -135,6 +144,7 @@ Todas las vistas del sistema (`ProductsView`, `ClientesView`, `PurchasesView`, `
 | **Clientes y Cuentas** | `/clientes` | `/administracion` (Tab 2) | **100% Operativo** | ✅ Sí (`inventario.cliente`) |
 | **Compras y Proveedores** | `/compras` | `/administracion` (Tab 3) | **100% Operativo** | ✅ Sí (`inventario.compra`, `detalle_compra`, `proveedor`) |
 | **Inventario y Almacenes** | `/inventario` | `/administracion` (Tab 4) | **100% Operativo** | ✅ Sí (`inventario.stock`, `almacen`, `movimientos_productos`) |
+| **Usuarios y Cuentas** | `/usuarios` | `/sistema` (Tab 1) | **100% Operativo** | ✅ Sí (`pos_rbac.usuario`, `pos_rbac.r_usuario_rol`, `pos_rbac.rol`) |
 | **Punto de Venta (POS)** | `/pos` | — | **Operativo** | ✅ Sí (Catálogo, clientes, selección y cobro) |
 
 ---
