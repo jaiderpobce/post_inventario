@@ -133,6 +133,9 @@ Todas las vistas del sistema (`ProductsView`, `ClientesView`, `PurchasesView`, `
 | `PurchaseCreateModal.jsx` | Carga de facturas de compras con selector de proveedor y filas dinámicas de productos | `POST /api/purchases` |
 | `PurchaseDetailModal.jsx` | Visualización del desglose de productos recibidos en una factura de compra | `GET /api/purchases/{id}` |
 | `InventoryAdjustmentModal.jsx` | Ejecución de ajustes de stock (entradas, mermas o conteos físicos) con motivo | `POST /api/inventory/adjust` |
+| `UserCreateModal.jsx` | Registro de nuevos operadores/usuarios en `pos_rbac.usuario` con contraseña segura | `POST /api/users` |
+| `UserEditModal.jsx` | Modificación de credenciales, perfil personal y contraseña de usuario | `PUT /api/users/{id}` |
+| `UserRolesModal.jsx` | Modal interactiva de asignación granular de roles con checkboxes M:N | `GET/PUT /api/users/{id}/roles` |
 
 ---
 

@@ -3,6 +3,7 @@ import { UserModel } from '../models/UserModel';
 import { useNotification } from '../context/NotificationContext';
 import UserCreateModal from '../components/user/UserCreateModal';
 import UserEditModal from '../components/user/UserEditModal';
+import UserRolesModal from '../components/user/UserRolesModal';
 import apiClient from '../services/apiClient';
 
 export default function UsuariosView() {
@@ -16,6 +17,7 @@ export default function UsuariosView() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -90,6 +92,11 @@ export default function UsuariosView() {
     setSelectedUser(updated);
   };
 
+  const handleRolesUpdated = (updated) => {
+    setUsers(prev => prev.map(u => u.id === updated.id ? { ...u, ...updated } : u));
+    setSelectedUser(prev => prev && prev.id === updated.id ? { ...prev, ...updated } : prev);
+  };
+
   const handleUserCreated = (newUser) => {
     setUsers(prev => [newUser, ...prev]);
     setSelectedUser(newUser);
@@ -141,6 +148,29 @@ export default function UsuariosView() {
               title={selectedUser ? `Modificar ${selectedUser.name}` : 'Seleccione un usuario para modificar'}
             >
               <span>✏️</span> Modificar
+            </button>
+
+            {/* BOTÓN ROLES */}
+            <button
+              onClick={() => setIsRolesModalOpen(true)}
+              disabled={!selectedUser}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '12px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                border: '1px solid ' + (selectedUser ? '#8430ce' : 'var(--panel-border)'),
+                background: selectedUser ? '#f3e8fd' : '#f1f3f4',
+                color: selectedUser ? '#8430ce' : '#9aa0a6',
+                cursor: selectedUser ? 'pointer' : 'not-allowed',
+                transition: 'var(--transition)'
+              }}
+              title={selectedUser ? `Asignar o modificar roles de ${selectedUser.name}` : 'Seleccione un usuario para gestionar sus roles'}
+            >
+              <span>🛡️</span> Roles
             </button>
 
             {/* BOTÓN SUSPENDER / REACTIVAR */}
@@ -533,6 +563,14 @@ export default function UsuariosView() {
         onClose={() => setIsEditModalOpen(false)}
         user={selectedUser}
         onSave={handleSaveEditedUser}
+      />
+
+      {/* MODAL ASIGNAR ROLES RBAC */}
+      <UserRolesModal
+        isOpen={isRolesModalOpen}
+        onClose={() => setIsRolesModalOpen(false)}
+        user={selectedUser}
+        onRolesUpdated={handleRolesUpdated}
       />
     </div>
   );

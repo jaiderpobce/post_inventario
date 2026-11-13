@@ -4,6 +4,7 @@ import { useNotification } from '../context/NotificationContext';
 import { UserModel } from '../models/UserModel';
 import UserCreateModal from '../components/user/UserCreateModal';
 import UserEditModal from '../components/user/UserEditModal';
+import UserRolesModal from '../components/user/UserRolesModal';
 import SubmoduleIcon from '../components/common/SubmoduleIcon';
 import apiClient from '../services/apiClient';
 
@@ -40,6 +41,7 @@ export default function SystemView() {
   const [userItemsPerPage, setUserItemsPerPage] = useState(10);
   const [isUserCreateModalOpen, setIsUserCreateModalOpen] = useState(false);
   const [isUserEditModalOpen, setIsUserEditModalOpen] = useState(false);
+  const [isUserRolesModalOpen, setIsUserRolesModalOpen] = useState(false);
 
   const fetchUsers = async () => {
     setUsersLoading(true);
@@ -110,6 +112,11 @@ export default function SystemView() {
   const handleSaveEditedUser = (updated) => {
     setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
     setSelectedUser(updated);
+  };
+
+  const handleRolesUpdated = (updated) => {
+    setUsers(prev => prev.map(u => u.id === updated.id ? { ...u, ...updated } : u));
+    setSelectedUser(prev => prev && prev.id === updated.id ? { ...prev, ...updated } : prev);
   };
 
   const handleUserCreated = (newUser) => {
@@ -271,6 +278,29 @@ export default function SystemView() {
                   title={selectedUser ? `Modificar ${selectedUser.name}` : 'Seleccione un usuario para modificar'}
                 >
                   <span>✏️</span> Modificar
+                </button>
+
+                {/* BOTÓN ROLES */}
+                <button
+                  onClick={() => setIsUserRolesModalOpen(true)}
+                  disabled={!selectedUser}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '0.84rem',
+                    fontWeight: 700,
+                    border: '1px solid ' + (selectedUser ? '#8430ce' : 'var(--panel-border)'),
+                    background: selectedUser ? '#f3e8fd' : '#f1f3f4',
+                    color: selectedUser ? '#8430ce' : '#9aa0a6',
+                    cursor: selectedUser ? 'pointer' : 'not-allowed',
+                    transition: 'var(--transition)'
+                  }}
+                  title={selectedUser ? `Asignar o modificar roles de ${selectedUser.name}` : 'Seleccione un usuario para gestionar sus roles'}
+                >
+                  <span>🛡️</span> Roles
                 </button>
 
                 {/* BOTÓN SUSPENDER / REACTIVAR */}
@@ -850,6 +880,14 @@ export default function SystemView() {
         onClose={() => setIsUserEditModalOpen(false)}
         user={selectedUser}
         onSave={handleSaveEditedUser}
+      />
+
+      {/* MODAL ASIGNAR ROLES RBAC */}
+      <UserRolesModal
+        isOpen={isUserRolesModalOpen}
+        onClose={() => setIsUserRolesModalOpen(false)}
+        user={selectedUser}
+        onRolesUpdated={handleRolesUpdated}
       />
     </div>
   );

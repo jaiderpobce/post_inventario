@@ -2,8 +2,11 @@ package com.pos.inventario.user;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +36,7 @@ public class UserController {
     }
 
     /**
-     * Lista todos los usuarios registrados en pos_rbac.usuario con sus roles asignados
+     * Lista todos los usuarios registrados en pos_rbac.usuario con sus roles asignados (M:N)
      */
     @GetMapping
     public List<UserDto> getUsers() {
@@ -46,13 +49,16 @@ public class UserController {
                 COALESCE(u.telefono, '') AS telefono,
                 u.email,
                 u.activo,
-                COALESCE(r.id, 4) AS rol_id,
-                COALESCE(r.nombre_rol, 'CAJERO') AS nombre_rol,
-                COALESCE(r.descripcion, 'Operador') AS rol_desc,
+                COALESCE(GROUP_CONCAT(DISTINCT r.nombre_rol ORDER BY r.id SEPARATOR ', '), 'SIN ROL') AS roles_str,
+                COALESCE(GROUP_CONCAT(DISTINCT r.id ORDER BY r.id SEPARATOR ','), '') AS role_ids_str,
+                COALESCE(MIN(r.id), 4) AS rol_id,
+                COALESCE(MIN(r.nombre_rol), 'CAJERO') AS nombre_rol,
+                COALESCE(GROUP_CONCAT(DISTINCT r.descripcion ORDER BY r.id SEPARATOR ' | '), 'Operador') AS rol_desc,
                 COALESCE(DATE_FORMAT(u.fecha_creacion, '%Y-%m-%d %H:%i'), '') AS fecha_creacion
             FROM pos_rbac.usuario u
             LEFT JOIN pos_rbac.r_usuario_rol ur ON ur.usuario_id = u.id
             LEFT JOIN pos_rbac.rol r ON r.id = ur.rol_id
+            GROUP BY u.id
             ORDER BY u.id ASC
             """;
 
@@ -65,6 +71,24 @@ public class UserController {
             int activo = rs.getInt("activo");
             String status = (activo == 1) ? "ACTIVO" : "SUSPENDIDO";
 
+            String rolesStr = rs.getString("roles_str");
+            String roleIdsStr = rs.getString("role_ids_str");
+
+            List<Long> roleIds = (roleIdsStr != null && !roleIdsStr.trim().isEmpty())
+                    ? Arrays.stream(roleIdsStr.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .map(Long::valueOf)
+                            .collect(Collectors.toList())
+                    : Collections.emptyList();
+
+            List<String> rolesList = (rolesStr != null && !rolesStr.trim().isEmpty() && !rolesStr.equals("SIN ROL"))
+                    ? Arrays.stream(rolesStr.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList())
+                    : Collections.emptyList();
+
             return new UserDto(
                     rs.getLong("id"),
                     rs.getString("doc"),
@@ -73,8 +97,10 @@ public class UserController {
                     apellido,
                     rs.getString("telefono"),
                     rs.getString("email"),
-                    rs.getString("nombre_rol"),
+                    rolesStr,
                     rs.getLong("rol_id"),
+                    roleIds,
+                    rolesList,
                     rs.getString("rol_desc"),
                     status,
                     activo == 1,
@@ -84,7 +110,7 @@ public class UserController {
     }
 
     /**
-     * Lista el catálogo de roles disponibles en pos_rbac.rol
+     * Lista el catálogo general de roles disponibles en pos_rbac.rol
      */
     @GetMapping("/roles")
     public List<RoleDto> getRoles() {
@@ -97,7 +123,80 @@ public class UserController {
     }
 
     /**
-     * Registra un nuevo operador/usuario en pos_rbac.usuario y asigna su rol
+     * Devuelve la lista completa de roles indicando con un booleano cuáles tiene asignados el usuario específico
+     */
+    @GetMapping("/{id}/roles")
+    public List<UserRoleItemDto> getUserRoles(@PathVariable Long id) {
+        String sql = """
+            SELECT 
+                r.id,
+                r.nombre_rol,
+                r.descripcion,
+                CASE WHEN ur.id IS NOT NULL THEN 1 ELSE 0 END AS assigned
+            FROM pos_rbac.rol r
+            LEFT JOIN pos_rbac.r_usuario_rol ur ON ur.rol_id = r.id AND ur.usuario_id = ?
+            ORDER BY r.id ASC
+            """;
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new UserRoleItemDto(
+                rs.getLong("id"),
+                rs.getString("nombre_rol"),
+                rs.getString("descripcion"),
+                rs.getInt("assigned") == 1
+        ), id);
+    }
+
+    /**
+     * Actualiza la asignación M:N de roles de un usuario en pos_rbac.r_usuario_rol
+     */
+    @PutMapping("/{id}/roles")
+    public ResponseEntity<?> updateUserRoles(@PathVariable Long id, @RequestBody UpdateUserRolesRequest req) {
+        if (req == null || req.roleIds() == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Debe proporcionar la lista de roles"));
+        }
+
+        // Si es el Superadmin (id = 1), no se le puede retirar el rol SUPERADMIN (id = 1)
+        if (id == 1L && !req.roleIds().contains(1L)) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "No es posible revocar el rol SUPERADMIN a la cuenta principal del sistema"
+            ));
+        }
+
+        // Limpiar roles actuales del usuario
+        jdbcTemplate.update("DELETE FROM pos_rbac.r_usuario_rol WHERE usuario_id = ?", id);
+
+        // Asignar los roles recibidos
+        for (Long roleId : req.roleIds()) {
+            jdbcTemplate.update(
+                    "INSERT INTO pos_rbac.r_usuario_rol (usuario_id, rol_id) VALUES (?, ?)",
+                    id,
+                    roleId
+            );
+        }
+
+        // Obtener los nombres actualizados de los roles asignados
+        List<String> roleNames = jdbcTemplate.query(
+                "SELECT r.nombre_rol FROM pos_rbac.r_usuario_rol ur JOIN pos_rbac.rol r ON r.id = ur.rol_id WHERE ur.usuario_id = ? ORDER BY r.id ASC",
+                (rs, rowNum) -> rs.getString("nombre_rol"),
+                id
+        );
+
+        String rolesSummary = String.join(", ", roleNames);
+        if (rolesSummary.isEmpty()) {
+            rolesSummary = "SIN ROL";
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Roles actualizados con éxito para el usuario",
+                "role", rolesSummary,
+                "roles", roleNames,
+                "roleIds", req.roleIds()
+        ));
+    }
+
+    /**
+     * Registra un nuevo operador/usuario en pos_rbac.usuario
+     * (La asignación de rol se realiza posteriormente mediante la modal de roles)
      */
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequest req) {
@@ -165,10 +264,10 @@ public class UserController {
         Number generatedKey = keyHolder.getKey();
         Long newId = (generatedKey != null) ? generatedKey.longValue() : 0L;
 
-        // Asignación de rol (por ID o por nombre, default 4 = CAJERO)
+        // Asignación de rol inicial por defecto: CAJERO (id: 4) si no viene especificado
         Long targetRoleId = req.roleId();
         String targetRoleName = "CAJERO";
-        if (targetRoleId == null && req.role() != null) {
+        if (targetRoleId == null && req.role() != null && !req.role().trim().isEmpty()) {
             List<Long> roleIds = jdbcTemplate.query(
                     "SELECT id FROM pos_rbac.rol WHERE UPPER(nombre_rol) = ?",
                     (rs, rowNum) -> rs.getLong("id"),
@@ -182,7 +281,6 @@ public class UserController {
             targetRoleId = 4L; // Default Cajero
         }
 
-        // Obtener nombre del rol
         List<String> roleNames = jdbcTemplate.query(
                 "SELECT nombre_rol FROM pos_rbac.rol WHERE id = ?",
                 (rs, rowNum) -> rs.getString("nombre_rol"),
@@ -192,7 +290,7 @@ public class UserController {
             targetRoleName = roleNames.get(0);
         }
 
-        // Insertar relación de rol
+        // Insertar asignación inicial
         jdbcTemplate.update(
                 "INSERT INTO pos_rbac.r_usuario_rol (usuario_id, rol_id) VALUES (?, ?)", 
                 newId, 
@@ -211,6 +309,8 @@ public class UserController {
                 email,
                 targetRoleName,
                 targetRoleId,
+                List.of(targetRoleId),
+                List.of(targetRoleName),
                 "",
                 "ACTIVO",
                 true,
@@ -224,7 +324,7 @@ public class UserController {
     }
 
     /**
-     * Modifica los datos de un usuario existente y su rol
+     * Modifica los datos de un usuario existente
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UpdateUserRequest req) {
@@ -294,42 +394,27 @@ public class UserController {
             jdbcTemplate.update("UPDATE pos_rbac.usuario SET password_hash = ? WHERE id = ?", newHash, id);
         }
 
-        // Actualizar rol asignado si se envió roleId o role
-        Long targetRoleId = req.roleId();
-        String targetRoleName = "CAJERO";
-        if (targetRoleId == null && req.role() != null) {
-            List<Long> roleIds = jdbcTemplate.query(
-                    "SELECT id FROM pos_rbac.rol WHERE UPPER(nombre_rol) = ?",
-                    (rs, rowNum) -> rs.getLong("id"),
-                    req.role().trim().toUpperCase()
-            );
-            if (!roleIds.isEmpty()) {
-                targetRoleId = roleIds.get(0);
-            }
+        // Si se envió roleId explícito en el request de modificación, actualizar
+        if (req.roleId() != null) {
+            jdbcTemplate.update("DELETE FROM pos_rbac.r_usuario_rol WHERE usuario_id = ?", id);
+            jdbcTemplate.update("INSERT INTO pos_rbac.r_usuario_rol (usuario_id, rol_id) VALUES (?, ?)", id, req.roleId());
         }
 
-        if (targetRoleId != null) {
-            jdbcTemplate.update("DELETE FROM pos_rbac.r_usuario_rol WHERE usuario_id = ?", id);
-            jdbcTemplate.update("INSERT INTO pos_rbac.r_usuario_rol (usuario_id, rol_id) VALUES (?, ?)", id, targetRoleId);
-            
-            List<String> roleNames = jdbcTemplate.query(
-                    "SELECT nombre_rol FROM pos_rbac.rol WHERE id = ?",
-                    (rs, rowNum) -> rs.getString("nombre_rol"),
-                    targetRoleId
-            );
-            if (!roleNames.isEmpty()) {
-                targetRoleName = roleNames.get(0);
-            }
-        } else {
-            // Leer rol actual
-            List<String> roleNames = jdbcTemplate.query(
-                    "SELECT r.nombre_rol FROM pos_rbac.r_usuario_rol ur JOIN pos_rbac.rol r ON r.id = ur.rol_id WHERE ur.usuario_id = ?",
-                    (rs, rowNum) -> rs.getString("nombre_rol"),
-                    id
-            );
-            if (!roleNames.isEmpty()) {
-                targetRoleName = roleNames.get(0);
-            }
+        // Obtener roles actuales del usuario
+        List<String> roleNames = jdbcTemplate.query(
+                "SELECT r.nombre_rol FROM pos_rbac.r_usuario_rol ur JOIN pos_rbac.rol r ON r.id = ur.rol_id WHERE ur.usuario_id = ? ORDER BY r.id ASC",
+                (rs, rowNum) -> rs.getString("nombre_rol"),
+                id
+        );
+        List<Long> roleIds = jdbcTemplate.query(
+                "SELECT rol_id FROM pos_rbac.r_usuario_rol WHERE usuario_id = ? ORDER BY rol_id ASC",
+                (rs, rowNum) -> rs.getLong("rol_id"),
+                id
+        );
+
+        String rolesSummary = String.join(", ", roleNames);
+        if (rolesSummary.isEmpty()) {
+            rolesSummary = "SIN ROL";
         }
 
         String fullName = (!lastName.isEmpty()) ? (firstName + " " + lastName).trim() : firstName;
@@ -343,8 +428,10 @@ public class UserController {
                 lastName,
                 phone,
                 email,
-                targetRoleName,
-                targetRoleId != null ? targetRoleId : 4L,
+                rolesSummary,
+                roleIds.isEmpty() ? 4L : roleIds.get(0),
+                roleIds,
+                roleNames,
                 "",
                 status,
                 !"SUSPENDIDO".equalsIgnoreCase(status),
@@ -422,6 +509,8 @@ public class UserController {
             String email,
             String role,
             Long roleId,
+            List<Long> roleIds,
+            List<String> roles,
             String roleDesc,
             String status,
             boolean active,
@@ -429,6 +518,8 @@ public class UserController {
     }
 
     public record RoleDto(Long id, String name, String description) {}
+    public record UserRoleItemDto(Long id, String name, String description, boolean assigned) {}
+    public record UpdateUserRolesRequest(List<Long> roleIds) {}
 
     public record CreateUserRequest(
             String doc,

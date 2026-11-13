@@ -57,6 +57,7 @@ services:
       LOGGING_FILE_PATH: /app/logs
       LOGGING_FILE_NAME: /app/logs/pv_back.log
     volumes:
+      - ./pv_back/target/pv_back-1.0.0-SNAPSHOT.jar:/app/app.jar
       - ./docker/springboot/logs:/app/logs
       - ./docker/springboot/uploads:/app/uploads
       - ./docker/springboot/data:/app/data

@@ -10,7 +10,6 @@ export default function UserCreateModal({ isOpen, onClose, onUserCreated }) {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('CAJERO');
   const [password, setPassword] = useState('Admin123*');
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -23,7 +22,6 @@ export default function UserCreateModal({ isOpen, onClose, onUserCreated }) {
       setLastName('');
       setPhone('');
       setEmail('');
-      setRole('CAJERO');
       setPassword('Admin123*');
       setShowPassword(false);
       setError('');
@@ -51,13 +49,6 @@ export default function UserCreateModal({ isOpen, onClose, onUserCreated }) {
     setSaving(true);
     setError('');
 
-    const roleMap = {
-      'SUPERADMIN': 1,
-      'ADMINISTRADOR': 2,
-      'SUPERVISOR': 3,
-      'CAJERO': 4
-    };
-
     const payload = {
       doc: doc.trim().toUpperCase(),
       firstName: firstName.trim(),
@@ -65,8 +56,6 @@ export default function UserCreateModal({ isOpen, onClose, onUserCreated }) {
       name: `${firstName.trim()} ${lastName.trim()}`.trim(),
       phone: phone.trim(),
       email: email.trim().toLowerCase(),
-      role,
-      roleId: roleMap[role] || 4,
       password: password.trim()
     };
 
@@ -77,6 +66,9 @@ export default function UserCreateModal({ isOpen, onClose, onUserCreated }) {
       const created = result.data?.user || {
         id: Date.now(),
         ...payload,
+        role: 'CAJERO',
+        roles: ['CAJERO'],
+        roleIds: [4],
         status: 'ACTIVO',
         active: true
       };
@@ -257,74 +249,64 @@ export default function UserCreateModal({ isOpen, onClose, onUserCreated }) {
               />
             </div>
 
-            {/* ROL ASIGNADO */}
+            {/* CONTRASEÑA */}
             <div>
               <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-                Rol RBAC del Sistema <span style={{ color: '#ea4335' }}>*</span>
+                Contraseña de Acceso <span style={{ color: '#ea4335' }}>*</span>
               </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '9px 12px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--panel-border)',
-                  fontSize: '0.86rem',
-                  background: '#ffffff',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="CAJERO">💳 CAJERO (Punto de Venta)</option>
-                <option value="SUPERVISOR">🔍 SUPERVISOR (Caja y Reportes)</option>
-                <option value="ADMINISTRADOR">💼 ADMINISTRADOR (Gestión Operativa)</option>
-                <option value="SUPERADMIN">👑 SUPERADMIN (Control Total)</option>
-              </select>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Mínimo 6 caracteres"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 40px 9px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--panel-border)',
+                    fontSize: '0.86rem',
+                    fontFamily: showPassword ? 'inherit' : 'monospace'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '8px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    color: 'var(--text-dim)',
+                    padding: '4px'
+                  }}
+                  title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* CONTRASEÑA */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
-              Contraseña de Acceso <span style={{ color: '#ea4335' }}>*</span>
-            </label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                placeholder="Mínimo 6 caracteres"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '9px 40px 9px 12px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--panel-border)',
-                  fontSize: '0.86rem',
-                  fontFamily: showPassword ? 'inherit' : 'monospace'
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  color: 'var(--text-dim)',
-                  padding: '4px'
-                }}
-                title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-              Contraseña predeterminada recomendada: <code>Admin123*</code> (encriptada con BCrypt).
+          {/* AVISO INFORMATIVO DE ASIGNACIÓN DE ROLES */}
+          <div style={{
+            background: '#f3e8fd',
+            color: '#8430ce',
+            border: '1px solid #d2a4f9',
+            borderRadius: '12px',
+            padding: '10px 14px',
+            fontSize: '0.82rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginTop: '2px'
+          }}>
+            <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+            <div>
+              <strong>Gestión de Roles RBAC:</strong> Tras registrar al usuario, selecciónelo en la grilla y presione el botón <strong>«🛡️ Roles»</strong> para asignarle uno o múltiples roles específicos.
             </div>
           </div>
 
