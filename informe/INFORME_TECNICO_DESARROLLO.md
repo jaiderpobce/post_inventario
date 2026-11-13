@@ -136,6 +136,9 @@ Todas las vistas del sistema (`ProductsView`, `ClientesView`, `PurchasesView`, `
 | `UserCreateModal.jsx` | Registro de nuevos operadores/usuarios en `pos_rbac.usuario` con contraseña segura | `POST /api/users` |
 | `UserEditModal.jsx` | Modificación de credenciales, perfil personal y contraseña de usuario | `PUT /api/users/{id}` |
 | `UserRolesModal.jsx` | Modal interactiva de asignación granular de roles con checkboxes M:N | `GET/PUT /api/users/{id}/roles` |
+| `RoleCreateModal.jsx` | Registro de nuevos roles RBAC con inicialización automática de módulos | `POST /api/roles` |
+| `RoleEditModal.jsx` | Modificación de nombre y descripción de roles (protegido contra SUPERADMIN) | `PUT /api/roles/{id}` |
+| `RolePermissionsModal.jsx` | Matriz interactiva jerárquica: Módulos -> Vistas -> Permisos granulares por vista | `GET/PUT /api/roles/{id}/matrix` |
 
 ---
 
@@ -148,6 +151,7 @@ Todas las vistas del sistema (`ProductsView`, `ClientesView`, `PurchasesView`, `
 | **Compras y Proveedores** | `/compras` | `/administracion` (Tab 3) | **100% Operativo** | ✅ Sí (`inventario.compra`, `detalle_compra`, `proveedor`) |
 | **Inventario y Almacenes** | `/inventario` | `/administracion` (Tab 4) | **100% Operativo** | ✅ Sí (`inventario.stock`, `almacen`, `movimientos_productos`) |
 | **Usuarios y Cuentas** | `/usuarios` | `/sistema` (Tab 1) | **100% Operativo** | ✅ Sí (`pos_rbac.usuario`, `pos_rbac.r_usuario_rol`, `pos_rbac.rol`) |
+| **Roles y Permisos (RBAC)** | `/roles` | `/sistema` (Tab 2) | **100% Operativo** | ✅ Sí (`pos_rbac.rol`, `r_modulo_rol`, `vistas`, `permisos`, `vistas_permiso`) |
 | **Punto de Venta (POS)** | `/pos` | — | **Operativo** | ✅ Sí (Catálogo, clientes, selección y cobro) |
 
 ---
@@ -170,6 +174,9 @@ Se ejecutaron pruebas integrales de comunicación e integridad de datos:
 
 Todos los cambios fueron estructurados en commits semánticos y sincronizados con el repositorio remoto en la rama `dev`:
 
+- **Commit `a645357`:** `feat(rbac): agregar modal de gestion de roles con checks, boton de roles en vista usuarios y remover rol de creacion`
+- **Commit `0e8e34b`:** `feat(users): implementar gestion completa de usuarios y cuentas uniforme con clientes (backend rbac, modales, paginacion y vistas)`
+- **Commit `a925caa`:** `feat(docker): agregar volumenes de persistencia a backend-springboot (logs, uploads, data)`
 - **Commit `2550a7e`:** `feat: actualizacion de submodulos compras e inventario con vistas uniformes, modales y api backend`
 - **Commit `6b7bf72`:** `feat: modulo uniforme de clientes con modales de crear y editar, paginacion y api backend`
 - **Commit `06574c2`:** `feat: proceso completo para registrar nuevo producto con modal y guardado en bd`
