@@ -53,6 +53,13 @@ services:
       RBAC_DATASOURCE_URL: jdbc:mariadb://db-mariadb:3306/pos_rbac?useSSL=false&allowPublicKeyRetrieval=true
       RBAC_DATASOURCE_USERNAME: pos_user
       RBAC_DATASOURCE_PASSWORD: pos_password
+      # Persistencia de logs de servidor Spring Boot
+      LOGGING_FILE_PATH: /app/logs
+      LOGGING_FILE_NAME: /app/logs/pv_back.log
+    volumes:
+      - ./docker/springboot/logs:/app/logs
+      - ./docker/springboot/uploads:/app/uploads
+      - ./docker/springboot/data:/app/data
     depends_on:
       - db-mariadb
     networks:

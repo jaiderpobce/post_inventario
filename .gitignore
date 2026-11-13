@@ -2,6 +2,7 @@
 docker/mariadb/data/
 docker/**/data/
 docker/**/logs/
+docker/**/uploads/
 docker/**/webapps/*.war
 *.tar
 *.tar.gz
