@@ -3,7 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginView() {
-  const { login, isAuthenticated } = useAuth();
+  const { user, login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -11,11 +11,6 @@ export default function LoginView() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  // Si ya está autenticado, redirigir directo al POS
-  if (isAuthenticated) {
-    return <Navigate to="/pos" replace />;
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -95,6 +90,35 @@ export default function LoginView() {
             Acceda con sus credenciales autorizadas en <strong>pos_rbac</strong>
           </p>
         </div>
+
+        {/* BANNER INFORMATIVO SI YA HAY SESIÓN ACTIVA */}
+        {isAuthenticated && user && (
+          <div style={{
+            background: '#e8f0fe',
+            border: '1px solid #c2e7ff',
+            borderRadius: '14px',
+            padding: '12px 16px',
+            marginBottom: '20px',
+            fontSize: '0.86rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px'
+          }}>
+            <div>
+              <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem' }}>Sesión activa en curso:</span>
+              <strong style={{ color: 'var(--google-blue)' }}>{user.nombre} {user.apellido}</strong> <span style={{ fontSize: '0.72rem', background: '#ffffff', border: '1px solid #c2e7ff', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, marginLeft: '4px' }}>{user.rol}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/pos')}
+              className="btn-quick-add"
+              style={{ fontSize: '0.78rem', padding: '6px 12px' }}
+            >
+              Entrar al POS →
+            </button>
+          </div>
+        )}
 
         {/* MENSAJE DE ERROR */}
         {errorMessage && (

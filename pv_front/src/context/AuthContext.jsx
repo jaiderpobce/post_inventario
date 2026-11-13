@@ -66,18 +66,22 @@ const DEFAULT_CAJERO_MODULES = [
 ];
 
 export function AuthProvider({ children }) {
-  // Usuario autenticado actual
+  // Usuario autenticado actual en la sesión activa (sessionStorage)
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('pos_user');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* ignore */ }
+    const sessionSaved = sessionStorage.getItem('pos_user');
+    if (sessionSaved) {
+      try { return JSON.parse(sessionSaved); } catch (e) { /* ignore */ }
     }
-    return null; // Inicia en null para exigir login si no hay sesión activa
+    // Si había un guardado residual en localStorage de sesiones anteriores, lo limpiamos para exigir login al entrar
+    localStorage.removeItem('pos_user');
+    localStorage.removeItem('pos_modules');
+    localStorage.removeItem('pos_permissions');
+    return null; // Inicia en null para exigir login al entrar a la aplicación
   });
 
   // Lista dinámica de módulos autorizados provenientes de la tabla modulo / r_modulo_rol
   const [modules, setModules] = useState(() => {
-    const saved = localStorage.getItem('pos_modules');
+    const saved = sessionStorage.getItem('pos_modules');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { /* ignore */ }
     }
@@ -85,7 +89,7 @@ export function AuthProvider({ children }) {
   });
 
   const [permissions, setPermissions] = useState(() => {
-    const saved = localStorage.getItem('pos_permissions');
+    const saved = sessionStorage.getItem('pos_permissions');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) { /* ignore */ }
     }
@@ -102,7 +106,7 @@ export function AuthProvider({ children }) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setModules(data);
-          localStorage.setItem('pos_modules', JSON.stringify(data));
+          sessionStorage.setItem('pos_modules', JSON.stringify(data));
           return;
         }
       }
@@ -113,10 +117,10 @@ export function AuthProvider({ children }) {
     // Fallback local según rol
     if (user?.rol === 'CAJERO') {
       setModules(DEFAULT_CAJERO_MODULES);
-      localStorage.setItem('pos_modules', JSON.stringify(DEFAULT_CAJERO_MODULES));
+      sessionStorage.setItem('pos_modules', JSON.stringify(DEFAULT_CAJERO_MODULES));
     } else {
       setModules(DEFAULT_SUPERADMIN_MODULES);
-      localStorage.setItem('pos_modules', JSON.stringify(DEFAULT_SUPERADMIN_MODULES));
+      sessionStorage.setItem('pos_modules', JSON.stringify(DEFAULT_SUPERADMIN_MODULES));
     }
   }, [user?.rol]);
 
@@ -140,9 +144,12 @@ export function AuthProvider({ children }) {
         setUser(data.user);
         setModules(data.modules || []);
         setPermissions(data.permissions || []);
-        localStorage.setItem('pos_user', JSON.stringify(data.user));
-        localStorage.setItem('pos_modules', JSON.stringify(data.modules || []));
-        localStorage.setItem('pos_permissions', JSON.stringify(data.permissions || []));
+        sessionStorage.setItem('pos_user', JSON.stringify(data.user));
+        sessionStorage.setItem('pos_modules', JSON.stringify(data.modules || []));
+        sessionStorage.setItem('pos_permissions', JSON.stringify(data.permissions || []));
+        localStorage.removeItem('pos_user');
+        localStorage.removeItem('pos_modules');
+        localStorage.removeItem('pos_permissions');
         setIsLoginModalOpen(false);
         return { success: true };
       }
@@ -162,8 +169,9 @@ export function AuthProvider({ children }) {
       setUser(superUser);
       setModules(DEFAULT_SUPERADMIN_MODULES);
       setPermissions(['ALL']);
-      localStorage.setItem('pos_user', JSON.stringify(superUser));
-      localStorage.setItem('pos_modules', JSON.stringify(DEFAULT_SUPERADMIN_MODULES));
+      sessionStorage.setItem('pos_user', JSON.stringify(superUser));
+      sessionStorage.setItem('pos_modules', JSON.stringify(DEFAULT_SUPERADMIN_MODULES));
+      localStorage.removeItem('pos_user');
       setIsLoginModalOpen(false);
       return { success: true };
     } else if (email === 'cajero@sistema.com' && (password === 'Admin123*' || password === 'admin')) {
@@ -177,8 +185,9 @@ export function AuthProvider({ children }) {
       setUser(cajeroUser);
       setModules(DEFAULT_CAJERO_MODULES);
       setPermissions(['ACCESO_VISTA', 'REGISTRAR_VENTA', 'ELIMINAR_ITEM']);
-      localStorage.setItem('pos_user', JSON.stringify(cajeroUser));
-      localStorage.setItem('pos_modules', JSON.stringify(DEFAULT_CAJERO_MODULES));
+      sessionStorage.setItem('pos_user', JSON.stringify(cajeroUser));
+      sessionStorage.setItem('pos_modules', JSON.stringify(DEFAULT_CAJERO_MODULES));
+      localStorage.removeItem('pos_user');
       setIsLoginModalOpen(false);
       return { success: true };
     }
@@ -197,13 +206,16 @@ export function AuthProvider({ children }) {
 
   // Cerrar sesión
   const logout = () => {
+    sessionStorage.removeItem('pos_user');
+    sessionStorage.removeItem('pos_modules');
+    sessionStorage.removeItem('pos_permissions');
     localStorage.removeItem('pos_user');
     localStorage.removeItem('pos_modules');
     localStorage.removeItem('pos_permissions');
     setUser(null);
     setModules([]);
     setPermissions([]);
-    setIsLoginModalOpen(true);
+    setIsLoginModalOpen(false);
   };
 
   // Helper para verificar si tiene un permiso específico
